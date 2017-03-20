@@ -47,7 +47,8 @@ setuptools.setup(
     version=read_package_variable('__version__'),
 
     description="Transient signal detector and classifier.",
-    url='https://github.com/elenacuoco/wdfml',
+    #url='https://github.com/elenacuoco/wdfml',
+    url='https://gitlab.com/WDF/wdfml',
     author='Elena Cuoco',
     author_email='elena.cuoco@ego-gw.it',
 
@@ -71,6 +72,9 @@ setuptools.setup(
     ],
 
     install_requires=[
-        "testpackage ~= 2.26",
+        "testpackage",
+        "pytsa",
+        "sklearn",
+        "numpy"
     ]
 )

@@ -1,8 +1,7 @@
 __author__ ='Elena Cuoco'
-__project__ ='pytsa'
+__project__ ='wdfml'
 
 import pytsa
-
 
 class wdf(object):
     def __init__(self, window,overlap,sampling,threshold,sigma):
