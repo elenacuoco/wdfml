@@ -6,6 +6,23 @@ import pytsa
 class wdf(object):
     def __init__(self, parameters):
         self.parameters = parameters
+        """
+
+                     :type sigma: float
+                     :type threshold: float
+                     :type sampling: float
+                     :type overlap: int
+                     :type window: int
+
+                     """
+        self.dict_param = {}
+        self.dict_param['window'] = window
+        self.dict_param['overlap'] = overlap
+        self.dict_param['threshold'] = threshold
+        self.dict_param['sigma'] = sigma
+        self.dict_param['sampling'] = sampling
+        self.dict_param['Ncoeff'] = window
+
         self.DetectD = pytsa.WDF2Classify(parameters["window"],
                                           parameters["overlap"],
                                           parameters["threshold"],
