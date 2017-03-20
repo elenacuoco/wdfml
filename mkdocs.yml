@@ -1,0 +1,13 @@
+site_name: wdfml
+site_description: Transient signal detector and classifier.
+site_author: Elena Cuoco
+repo_url: https://github.com/elenacuoco/wdfml
+
+theme: readthedocs
+
+pages:
+- Home: index.md
+- About:
+  - Release Notes: about/changelog.md
+  - Contributing: about/contributing.md
+  - License: about/license.md
