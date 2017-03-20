@@ -10,6 +10,7 @@ __project__ = 'wdfml'
 
 import json
 
+
 # class to handle the parameters
 class Parameters(object):
 
@@ -17,12 +18,21 @@ class Parameters(object):
         self.__dict__ = kwargs
 
     def dump(self, filename):
+        """
 
+        :param filename: name of file where saving the parameters
+        :type filename: basestring
+        """
         self.filename = filename
         with open(self.filename, mode='w', encoding='utf-8') as f:
             json.dump(self.__dict__, f)
 
     def load(self, filename):
+        """
+
+                :param filename: name of file where loading the parameters
+                :type filename: basestring
+                """
         self.filename = filename
         with open(self.filename) as data_file:
             data = json.load(data_file)
