@@ -2,11 +2,10 @@
 # pylint: disable=redefined-outer-name,unused-variable,expression-not-assigned,singleton-comparison
 
 import pytest
+from click.testing import CliRunner
 from expecter import expect
 
-from click.testing import CliRunner
-
-from wdfml.cli import main
+from wdfml.ui.cli import main
 
 
 @pytest.fixture

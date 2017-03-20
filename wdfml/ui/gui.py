@@ -1,10 +1,9 @@
 """A sample module."""
+import logging
 from tkinter import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from tkinter.ttk import *  # pylint: disable=wildcard-import,unused-wildcard-import
-import logging
 
-from . import utils
-
+from wdfml.ui import utils
 
 log = logging.getLogger(__name__)
 

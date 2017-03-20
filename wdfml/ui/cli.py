@@ -2,8 +2,7 @@ import logging
 
 import click
 
-from . import utils
-
+from wdfml.ui import utils
 
 log = logging.getLogger(__name__)
 

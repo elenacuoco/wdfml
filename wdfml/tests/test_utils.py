@@ -3,7 +3,7 @@
 
 from expecter import expect
 
-from wdfml import utils
+from wdfml.ui import utils
 
 
 def describe_feet_to_meters():
