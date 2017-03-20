@@ -21,7 +21,6 @@ class wdf(object):
         """
          # to be multiplied by central frequency
         self.trigger = pytsa.EventFullFeatured(self.parameters["Ncoeff"])
-
         self.DetectD(data,self.parameters["sigma"])
         self.DetectD(self.trigger)
         return self.trigger
