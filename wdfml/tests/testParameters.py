@@ -8,15 +8,18 @@ __email__ = "elena.cuoco@ego-gw.it"
 __status__ = "Development"
 
 from wdfml.config.parameters import Parameters
-from wdfml.core import wdf
+
 
 def main(window, overlap, threshold, sigma, sampling):
     par = Parameters(window=window, overlap=overlap, threshold=threshold, sigma=sigma, sampling=sampling)
+    par.sampling=1.0
     par.dt = 2.0 * par.window / par.sampling
     par.factorF = par.sampling / (2.0 * par.window)
+    par.window=3200
     par.dump("fileParameters.json")
-    wdf_instance=wdf.wdf(par.__dict__)
-
+    par2 = Parameters()
+    par2.load("fileParameters.json")
+    par2.dump("file2.json")
 
 if __name__ == "__main__":
     main(1024, 900, 4, 0.1, 4096)
