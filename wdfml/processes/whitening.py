@@ -10,7 +10,7 @@ from pytsa.tsa import *
 
 
 class Whitening(object):
-    def __init__(self, ARorder):
+    def __init__ (self, ARorder):
         """
 
         :type ARorder: int
@@ -21,29 +21,22 @@ class Whitening(object):
         self.LV = LatticeView(self.ARorder)
         self.LF = LatticeFilter(self.LV)
 
-    def ParametersEstimate(self, data):
+    def ParametersEstimate (self, data):
         """
 
         :type data: pytsa.SeqViewDouble
         """
         self.ADE(data)
         self.ADE.GetLatticeView(self.LV)
-        return self.ADE, self.LV
-
-    def ParametersLoad(self, ARfile, LVfile):
-        """
-        :param ARfile: file for AutoRegressive parameters
-        :type ARfile: basestring
-        :param LVfile: file for Lattice View parameters
-        :type LVfile: basestring
-        :return: Autoregressive and Lattice View
-        :rtype: eternity format
-        """
-        self.ADE.Load(ARfile, "txt")
-        self.LV.Load(LVfile, "txt")
         self.LF.init(self.LV)
-        self.ADE.GetLatticeView(self.LV)
-        return self.ADE, self.LV
+        return
+
+    def GetSigma ( self ):
+        return self.ADE.GetAR(0)
+
+    def Process(self, data, dataw):
+        self.LF(data, dataw)
+        return dataw
 
     def ParametersSave (self, ARfile, LVfile):
         """
@@ -57,18 +50,17 @@ class Whitening(object):
         self.LV.Save(LVfile, "txt")
         return
 
-    def getSigma(self):
+    def ParametersLoad (self, ARfile, LVfile):
         """
-        :return: Estimated sigma of the noise
-        :rtype: float
+        :param ARfile: file for AutoRegressive parameters
+        :type ARfile: basestring
+        :param LVfile: file for Lattice View parameters
+        :type LVfile: basestring
+        :return: Autoregressive and Lattice View
+        :rtype: eternity format
         """
-        return self.ADE.GetAR(0)
-
-    def initLatticeFilter(self):
+        self.ADE.Load(ARfile, "txt")
+        self.LV.Load(LVfile, "txt")
         self.LF.init(self.LV)
-        return self.LF
-
-    def process(self,data,dataw):
-        self.LF(data,dataw)
-        return dataw
-
+        self.ADE.GetLatticeView(self.LV)
+        return
