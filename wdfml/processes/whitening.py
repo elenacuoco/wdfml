@@ -34,9 +34,9 @@ class Whitening(object):
     def GetSigma ( self ):
         return self.ADE.GetAR(0)
 
-    def Process(self, data, dataw):
+    def Process(self, data,dataw):
         self.LF(data, dataw)
-        return dataw
+        return
 
     def ParametersSave (self, ARfile, LVfile):
         """

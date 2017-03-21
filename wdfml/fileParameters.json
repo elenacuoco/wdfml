@@ -1,16 +1,19 @@
 {
-  "window": 1024,
-  "overlap": 900,
+  "window": 256,
+  "overlap": 200,
   "threshold": 4,
   "file": "/virgoData/ffl/raw.ffl",
   "chan": "V1:LSC_B1p_DC",
   "gpsStart":1173450800,
-  "gpsEnd":1173452000,
+  "gpsEnd":1173450900,
   "lenStart":10.0,
   "len":1.0,
   "outdir": "../output/",
-  "gps": 1173558200,
+  "gps":1173450800,
   "ARorder": 3000,
-  "learn": 300,
-  "estimation": "False"
+  "learn": 100,
+  "estimation": "True",
+  "sampling":10000,
+  "resampling":5000,
+  "BLfilterOrder":9
 }

@@ -11,16 +11,12 @@ class wdf(object):
         :type parameters: class Parameters
         """
         self.parameters = parameters
-
         self.wdf2classify = WDF2Classify(self.parameters.window,
                                           self.parameters.overlap,
                                           self.parameters.threshold,
                                           self.parameters.sigma,
                                           self.parameters.Ncoeff)
         self.trigger = EventFullFeatured(self.parameters.Ncoeff)
-
-
-
 
 
     def FindEvents (self,data):
