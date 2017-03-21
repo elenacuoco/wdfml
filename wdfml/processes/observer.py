@@ -16,3 +16,34 @@ class Observer(object):
     @abstractmethod
     def update ( self, *args, **kwargs ):
         pass
+
+class FileObserver(Observer):
+    def __init__ ( self ):
+        self.args = []
+        self.kwargs = {}
+
+    def update ( self, *args, **kwargs ):
+        self.args = args
+        self.kwargs = kwargs
+        return
+
+
+class DatabaseObserver(Observer):
+    def __init__ ( self ):
+        self.args = []
+        self.kwargs = {}
+
+    def update ( self, *args, **kwargs ):
+        self.args = args
+        self.kwargs = kwargs
+        return
+
+class ClassifierObserver(Observer):
+        def __init__ ( self ):
+            self.args = []
+            self.kwargs = {}
+
+        def update ( self, *args, **kwargs ):
+            self.args = args
+            self.kwargs = kwargs
+            return
