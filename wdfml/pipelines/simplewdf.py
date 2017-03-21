@@ -15,13 +15,13 @@ def main():
     logging.info("read Parameters")
     par = Parameters()
     par.load("fileParameters.json")
-    print(par.__dict__)
+    #print(par.__dict__)
 
     # Parameter for sequence of data
     gpsE = float(par.gpsStart) + 10.0
     Learn = SV()
     Learn_DS = SV()
-    print(par.sampling, par.resampling)
+    #print(par.sampling, par.resampling)
 
    # parameter for whitening and its estimation parameters
     whiten=Whitening(par.ARorder)
@@ -62,7 +62,7 @@ def main():
     par.sigma = whiten.GetSigma()
     print('Estimated sigma= %s' % par.sigma)
     par.Ncoeff = par.window
-    WDF=wdf(par)
+
 
     ##listener
     outfile = par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
@@ -82,12 +82,14 @@ def main():
     startT = data.GetStart()
     ## gpsEnd=par.gpsEnd +par.lenStart
     Nevents=0
+    WDF = wdf(par)
     while data.GetStart() < par.gpsEnd:
         streaming.GetData(data)
         ds.Process(data,data_ds)
         whiten.Process(data_ds, dataw)
+        WDF.SetData(dataw)
         while WDF.wdf2classify.GetDataNeeded() > 0:
-            ev=WDF.FindEvents(dataw)
+            ev=WDF.FindEvents()
             frequency = ev.mlevel * factorF
             ##listener
             stringa = repr(ev.mTime) + ',' + repr(ev.mSNR) + ',' + repr(frequency) + ','+ repr(ev.mWave)

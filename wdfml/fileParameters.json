@@ -12,7 +12,7 @@
   "gps":1173558200,
   "ARorder": 3000,
   "learn": 300,
-  "estimation": "True",
+  "estimation": "False",
   "sampling":10000,
   "resampling":5000,
   "BLfilterOrder":9
