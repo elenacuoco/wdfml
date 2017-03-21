@@ -2,11 +2,11 @@
 
 """Setup script for the package."""
 
-import os
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 import sys
-
 import setuptools
-
+import os
 
 PACKAGE_NAME = 'wdfml'
 MINIMUM_PYTHON_VERSION = 3, 5
@@ -45,20 +45,16 @@ check_python_version()
 setuptools.setup(
     name=read_package_variable('__project__'),
     version=read_package_variable('__version__'),
-
     description="Transient signal detector and classifier.",
-    #url='https://github.com/elenacuoco/wdfml',
+    # url='https://github.com/elenacuoco/wdfml',
     url='https://gitlab.com/WDF/wdfml',
     author='Elena Cuoco',
     author_email='elena.cuoco@ego-gw.it',
-
     packages=setuptools.find_packages(),
-
     entry_points={'console_scripts': [
         'wdfml-cli = wdfml.cli:main',
         'wdfml-gui = wdfml.gui:main',
     ]},
-
     long_description=build_description(),
     license='MIT',
     classifiers=[
@@ -70,14 +66,13 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
     ],
-
     install_requires=[
         "testpackage",
         "pytsa",
         "sklearn",
         "numpy"
     ],
-    setup_requires = ['pytest-runner'],
-    tests_require = ['pytest'],
-
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
+    zip_safe=False,
 )

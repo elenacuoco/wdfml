@@ -8,7 +8,7 @@ __email__ = "elena.cuoco@ego-gw.it"
 __status__ = "Development"
 
 from wdfml.config.parameters import Parameters
-from wdfml.core.wdf import wdf
+from wdfml.processes.wdf import wdf
 
 def main(window, overlap, threshold, sigma, sampling):
     par = Parameters(window=window, overlap=overlap, threshold=threshold, sigma=sigma, sampling=sampling)

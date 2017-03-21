@@ -38,3 +38,12 @@ class Parameters(object):
             data = json.load(data_file)
         self.__dict__ = data
         return self.__dict__
+
+class wdfParameters(Parameters):
+
+    def __init__(self, window=1,overlap=1,threshold=1.0,sigma=1.0,sampling=1.0):
+        self.window=window
+        self.overlap=overlap
+        self.threshold=threshold
+        self.sigma=sigma
+        self.sampling=sampling
