@@ -11,11 +11,14 @@ __project__ = 'wdfml'
 import json
 
 
+
+
 # class to handle the parameters
 class Parameters(object):
-
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
+    def __getattr__(self, attr):
+        return self.__dict__[attr]
 
     def dump(self, filename):
         """
@@ -39,11 +42,11 @@ class Parameters(object):
         self.__dict__ = data
         return self.__dict__
 
-class wdfParameters(Parameters):
 
-    def __init__(self, window=1,overlap=1,threshold=1.0,sigma=1.0,sampling=1.0):
-        self.window=window
-        self.overlap=overlap
-        self.threshold=threshold
-        self.sigma=sigma
-        self.sampling=sampling
+class wdfParameters(Parameters):
+    def __init__(self, window=1, overlap=1, threshold=1.0, sigma=1.0, sampling=1.0):
+        self.window = window
+        self.overlap = overlap
+        self.threshold = threshold
+        self.sigma = sigma
+        self.sampling = sampling

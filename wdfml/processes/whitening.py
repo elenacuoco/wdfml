@@ -3,41 +3,72 @@
 .. moduleauthor:: Elena Cuoco <elena.cuoco@ego-gw.it>
 
 """
-__author__ ='Elena Cuoco'
-__project__ ='pytsa'
+__author__ = 'Elena Cuoco'
+__project__ = 'pytsa'
 
-import pytsa
+from pytsa.tsa import *
 
 
 class Whitening(object):
     def __init__(self, ARorder):
-
         """
 
         :type ARorder: int
          
         """
         self.ARorder = ARorder
-        self.ADE = pytsa.ArBurgEstimator(self.ARorder)
-        self.LV = pytsa.LatticeView(self.ARorder)
-        self.LF = pytsa.LatticeFilter(self.LV)
+        self.ADE = ArBurgEstimator(self.ARorder)
+        self.LV = LatticeView(self.ARorder)
+        self.LF = LatticeFilter(self.LV)
 
-
-    def ParameterEstimate(self, data):
+    def ParametersEstimate(self, data):
         """
 
         :type data: pytsa.SeqViewDouble
         """
         self.ADE(data)
         self.ADE.GetLatticeView(self.LV)
-
         return self.ADE, self.LV
 
+    def ParametersLoad(self, ARfile, LVfile):
+        """
+        :param ARfile: file for AutoRegressive parameters
+        :type ARfile: basestring
+        :param LVfile: file for Lattice View parameters
+        :type LVfile: basestring
+        :return: Autoregressive and Lattice View
+        :rtype: eternity format
+        """
+        self.ADE.Load(ARfile, "txt")
+        self.LV.Load(LVfile, "txt")
+        self.LF.init(self.LV)
+        self.ADE.GetLatticeView(self.LV)
+        return self.ADE, self.LV
+
+    def ParametersSave (self, ARfile, LVfile):
+        """
+        :param ARfile: file for AutoRegressive parameters
+        :type ARfile: basestring
+        :param LVfile: file for Lattice View parameters
+        :type LVfile: basestring
+
+        """
+        self.ADE.Save(ARfile, "txt")
+        self.LV.Save(LVfile, "txt")
+        return
+
     def getSigma(self):
+        """
+        :return: Estimated sigma of the noise
+        :rtype: float
+        """
         return self.ADE.GetAR(0)
 
     def initLatticeFilter(self):
         self.LF.init(self.LV)
         return self.LF
 
+    def process(self,data,dataw):
+        self.LF(data,dataw)
+        return dataw
 
