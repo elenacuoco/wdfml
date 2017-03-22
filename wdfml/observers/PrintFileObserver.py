@@ -17,8 +17,7 @@ class PrintTriggers(Observer):
         self.filesave= par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
         par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
         self.Ncoeff= par.Ncoeff
-        self.f = open(self.filesave, 'a')
-
+        self.f = open(self.filesave, 'w')
         stringa = 'GPSMax,SNRMax,FreqMax,GPSstart,Duration,WaveletFam'
         for i in range(par.Ncoeff):
             stringa += ',' + 'WavCoeff' + str(i)

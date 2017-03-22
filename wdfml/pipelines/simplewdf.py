@@ -14,24 +14,19 @@ from wdfml.processes.whitening import *
 
 
 def main():
+    start_time = time.time()
     logging.basicConfig(level=logging.INFO)
     logging.info("read Parameters")
     par = Parameters()
     par.load("fileParameters.json")
-    # print(par.__dict__)
-    # Parameter for sequence of data
-    gpsE = float(par.gps) + 10.0
-    Learn = SV()
-    Learn_DS = SV()
-    # print(par.sampling, par.resampling)
-
-    # parameter for whitening and its estimation parameters
-    whiten = Whitening(par.ARorder)
     ID = str(par.chan) + '_' + str(par.gps)
     par.outdir = par.outdir + ID + '/'
     if not os.path.exists(par.outdir):
         os.makedirs(par.outdir)
     par.ID = ID
+
+    # parameter for whitening and its estimation parameters
+    whiten = Whitening(par.ARorder)
     par.ARfile = par.outdir + "ARfile.txt"
     par.LVfile = par.outdir + "LVfile.txt"
 
@@ -41,6 +36,10 @@ def main():
     else:
         logging.info('Start AR parameter estimation')
         ######## read data for AR estimation###############
+        # Parameter for sequence of data
+        gpsE = float(par.gps) + 10.0
+        Learn = SV()
+        Learn_DS = SV()
         learnlen = 2.0 * float(par.learn)
         strLearn = FrameIChannel(par.file, par.chan, learnlen, gpsE)
         par.Noutdata = int(par.learn * par.resampling)
@@ -69,16 +68,9 @@ def main():
     par.sigma = whiten.GetSigma()
     print('Estimated sigma= %s' % par.sigma)
     par.Ncoeff = par.window
-
-    ###Start detection loop
-    print("Starting detection loop")
-
     streaming.SetDataLength(par.len)
-    startT = data.GetStart()
-    ## gpsEnd=par.gpsEnd +par.lenStart
 
     WDF = wdf(par)
-
     observable = Observable()
     observableO = Observable()
     clustering = Clustering(par)
@@ -86,6 +78,8 @@ def main():
     observable.register(clustering)
     observableO.register(savetrigger)
 
+    ###Start detection loop
+    print("Starting detection loop")
     while data.GetStart() < par.gpsEnd:
         streaming.GetData(data)
         ds.Process(data, data_ds)
@@ -100,10 +94,10 @@ def main():
 
     print('Program terminated')
     par.dump(par.outdir + "fileParametersUsed.json")
-
-
-if __name__ == '__main__':  # pragma: no cover
-    start_time = time.time()
-    main()
     elapsed_time = time.time() - start_time
     print('elapsed_time= %s' % elapsed_time)
+
+if __name__ == '__main__':  # pragma: no cover
+
+    main()
+
