@@ -3,7 +3,7 @@
 """Package entry point."""
 
 
-from wdfml.pipelines.simplewdfml import main
+from wdfml.pipelines.simplewdf import main
 
 if __name__ == '__main__':  # pragma: no cover
     main()
