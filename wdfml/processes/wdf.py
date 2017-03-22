@@ -12,6 +12,7 @@ class wdf(object):
         """
 
         self.parameters = parameters
+
         self.wdf2classify = WDF2Classify(self.parameters.window,
                                          self.parameters.overlap,
                                          self.parameters.threshold,

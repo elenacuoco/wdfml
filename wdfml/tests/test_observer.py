@@ -1,7 +1,7 @@
 import unittest
 
-from wdfml.processes.observable import Observable
-from wdfml.processes.observer import Observer
+from wdfml.observers.observable import Observable
+from wdfml.observers.observer import Observer
 
 
 class AnObserver(Observer):
