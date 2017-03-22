@@ -95,9 +95,9 @@ def main():
     print('Program terminated')
     par.dump(par.outdir + "fileParametersUsed.json")
     elapsed_time = time.time() - start_time
-    print('elapsed_time= %s' % elapsed_time)
+    timeslice=par.gpsEnd-par.gpsStart
+    print('analyzed %s seconds in %s seconds' % (timeslice,elapsed_time))
 
 if __name__ == '__main__':  # pragma: no cover
-
     main()
 
