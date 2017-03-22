@@ -12,6 +12,9 @@ from wdfml.processes.wdf import *
 from wdfml.observers.observable import Observable
 from wdfml.observers.ClusteringObserver import Clustering
 from wdfml.observers.PrintFileObserver import PrintTriggers
+from wdfml.observers.ClassifierObserver import Classifier
+from sklearn.externals import joblib
+
 
 
 def main ( ):
@@ -72,16 +75,17 @@ def main ( ):
     streaming.SetDataLength(par.len)
     startT = data.GetStart()
     ## gpsEnd=par.gpsEnd +par.lenStart
-
+    clf = joblib.load('./pipelines/pca-gmm.pkl')
     WDF = wdf(par)
 
     observable = Observable()
     observableO = Observable()
     clustering = Clustering(par)
     savetrigger = PrintTriggers(par)
+    classifier=Classifier(par,clf)
     observable.register(clustering)
     observableO.register(savetrigger)
-
+    observableO.register(classifier)
     while data.GetStart() < par.gpsEnd:
         streaming.GetData(data)
         ds.Process(data, data_ds)
@@ -91,9 +95,8 @@ def main ( ):
             ev = WDF.FindEvents()
             observable.update_observers(ev)
             cev=clustering.CEV
-            if (cev != None and cev.mTime > 0.0):
-                observableO.update_observers(cev)
-
+            observableO.update_observers(cev)
+    print(classifier.classified)
     print('Program terminated')
     par.dump("fileParametersUsed.json")
 
