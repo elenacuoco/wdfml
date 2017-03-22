@@ -18,9 +18,7 @@ logger = logging.getLogger(__name__)
 class Clustering(Observer):
     def __init__ ( self, parameters ):
         """
-        :type deltaT: float
-        :type deltaSNR: float
-        :type triggers: pandas DataFrame
+        :type parameters: class Parameters object
         """
         self.deltaT = parameters.deltaT
         self.deltaSNR = parameters.deltaSNR
@@ -39,7 +37,7 @@ class Clustering(Observer):
 
     def update ( self, event ):
         if np.fabs(event.mTime - self.evN.mTime) > self.deltaT \
-                or (np.fabs(event.mSNR - self.evN.mSNR) / self.evN.mSNR) > self.deltaSNR:
+                or (np.fabs(event.mSNR - self.evN.mSNR) / (self.evN.mSNR+1.0)) > self.deltaSNR:
             self.clusteredEvent.mTime = self.evP.mTime  # starting time
             self.clusteredEvent.mTimeMax = self.TimeMax  # gps of peak
             self.clusteredEvent.mSNR = self.SNRmax  # snr of peak

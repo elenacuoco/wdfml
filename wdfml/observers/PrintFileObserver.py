@@ -26,7 +26,7 @@ class PrintTriggers(Observer):
         self.f.write(stringa)
 
     def update( self, Cev):
-        if Cev!=None:
+        if (Cev!=None and Cev.mTime!=0.0):
             stringa = repr(Cev.mTimeMax) + ',' + repr(Cev.mSNR) + ',' + repr(Cev.mlevel) + ',' + repr(Cev.mTime) + ',' + repr(Cev.mLenght) + ',' + repr(Cev.mWave)
             for i in range(0, self.Ncoeff):
                 stringa += ',' + repr(Cev.GetCoeff(i))
