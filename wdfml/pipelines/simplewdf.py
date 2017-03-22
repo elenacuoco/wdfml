@@ -27,7 +27,7 @@ def main():
 
     # parameter for whitening and its estimation parameters
     whiten = Whitening(par.ARorder)
-    ID = str(par.chan)+'_'+str(par.gps)
+    ID = str(par.chan) + '_' + str(par.gps)
     par.outdir = par.outdir + ID + '/'
     if not os.path.exists(par.outdir):
         os.makedirs(par.outdir)

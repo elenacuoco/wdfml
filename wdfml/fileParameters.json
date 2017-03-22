@@ -1,7 +1,7 @@
 {
-  "window": 1024,
-  "overlap": 900,
-  "threshold": 4.0,
+  "window": 2048,
+  "overlap": 2000,
+  "threshold": 5.0,
   "file": "/home/cuoco/data/H-H1_HOFT_C00-1167556608-4096.gwf",
   "chan": "H1:GDS-CALIB_STRAIN",
   "gpsStart":1167559536,
@@ -12,8 +12,8 @@
   "gps":1167559536,
   "ARorder": 3000,
   "learn": 300,
-  "sampling":10000,
-  "resampling":5000,
+  "sampling":16384,
+  "resampling":4096,
   "BLfilterOrder":9,
   "deltaT":0.01,
   "deltaSNR":0.2
