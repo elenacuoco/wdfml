@@ -89,7 +89,7 @@ def main():
             ev = WDF.FindEvents()
             observable.update_observers(ev)
             cev = clustering.CEV
-            if (cev != None and cev.mTime > 0.0):
+            if (cev != None and cev.GPSstart > 0.0):
                 observableO.update_observers(cev)
 
     print('Program terminated')

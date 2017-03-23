@@ -10,25 +10,37 @@ import logging
 
 from wdfml.observers.observer import Observer
 from pytsa.tsa import *
+import pickle
+import os.path
 
-
+import pickle
 class PrintTriggers(Observer):
-    def __init__ ( self, par ):
-        self.filesave= par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
-        par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
-        self.Ncoeff= par.Ncoeff
-        self.f = open(self.filesave, 'w')
+    def __init__(self, par):
+        self.filesave = par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
+            par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
+        self.Ncoeff = par.Ncoeff
+        try:
+            os.remove(self.filesave)
+        except OSError:
+            pass
+        self.f=open(self.filesave, 'w')
+
         stringa = 'GPSMax,SNRMax,FreqMax,GPSstart,Duration,WaveletFam'
-        for i in range(par.Ncoeff):
+        for i in range(self.Ncoeff):
             stringa += ',' + 'WavCoeff' + str(i)
         stringa += '\n'
         self.f.write(stringa)
 
-    def update( self, Cev):
-        if (Cev!=None and Cev.mTime!=0.0):
-            stringa = repr(Cev.mTimeMax) + ',' + repr(Cev.mSNR) + ',' + repr(Cev.mlevel) + ',' + repr(Cev.mTime) + ',' + repr(Cev.mLenght) + ',' + repr(Cev.mWave)
-            for i in range(0, self.Ncoeff):
-                stringa += ',' + repr(Cev.GetCoeff(i))
-            stringa += '\n'
-            self.f.write(stringa)
-            self.f.flush()
+    def update(self, Cev):
+        self.file_exists = os.path.isfile(self.filesave)
+        stringa = repr(Cev.GPSMax) + ',' + repr(Cev.SNRMax) + ',' + repr(Cev.FreqMax) + ',' \
+                  + repr(Cev.GPSstart) + ',' + repr(Cev.Duration) + ',' + repr(Cev.WaveletFam)
+        for i in range(self.Ncoeff):
+            stringa += ',' + repr(Cev.getWavCoeff(i))
+        stringa += '\n'
+        self.f.write(stringa)
+        self.f.flush()
+
+        #with open(self.filesave, 'ab') as output:
+        #    pickle.dump(self.CEV, output)
+

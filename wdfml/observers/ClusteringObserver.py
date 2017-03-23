@@ -7,10 +7,10 @@ This class implement the clustering of triggers found by wdf pipeline
 
 import logging
 
-from wdfml.observers.observer import Observer
 from pytsa.tsa import *
-import numpy as np
 
+from wdfml.observers.observer import Observer
+from wdfml.structures.ClusteredEvent import *
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class Clustering(Observer):
         self.WaveMax = ''
         self.Ncoeff = parameters.Ncoeff
         self.EventsNumber = 0
-        self.CEV = ClusterizedEventFullFeatured(parameters.Ncoeff)
+        self.CEV = None
 
     def update ( self, event ):
         if np.fabs(event.mTime - self.evN.mTime) > self.deltaT \
@@ -47,17 +47,8 @@ class Clustering(Observer):
 
             self.clusteredEvent.mlevel = self.ClevelMax * self.factorF  # frequency at peak
             self.clusteredEvent.mWave = self.WaveMax  # wavelet at peak
+            self.CEV = ClusteredEvent(self.clusteredEvent,self.Ncoeff)
 
-            self.CEV.mTime = self.clusteredEvent.mTime
-            self.CEV.mTimeMax = self.clusteredEvent.mTimeMax
-            self.CEV.mSNR = self.clusteredEvent.mSNR
-            self.CEV.mlevel = self.clusteredEvent.mlevel
-            self.CEV.mWave = self.clusteredEvent.mWave
-            self.CEV.mLenght = self.clusteredEvent.mLenght
-
-            for i in range(0, self.Ncoeff):
-                self.CEV.SetCoeff(i, self.Cmax[i])  # wavelet coefficient at peak
-            #print(event.mTime, self.CEV.mTime)
             self.clusteredEvent = ClusterizedEventFullFeatured(self.Ncoeff)
             self.evP.EVcopy(event)
             self.evN.EVcopy(event)
@@ -78,5 +69,5 @@ class Clustering(Observer):
                     self.Cmax[i] = event.GetCoeff(i)
                 self.WaveMax = event.mWave
                 self.ClevelMax = event.mlevel
-
+            self.CEV=None
 
