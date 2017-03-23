@@ -9,11 +9,11 @@ __status__ = "Development"
 import logging
 
 from wdfml.observers.observer import Observer
-from pytsa.tsa import *
-import pickle
+import csv
 import os.path
 
-import pickle
+
+
 class PrintTriggers(Observer):
     def __init__(self, par):
         self.filesave = par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
@@ -23,24 +23,14 @@ class PrintTriggers(Observer):
             os.remove(self.filesave)
         except OSError:
             pass
-        self.f=open(self.filesave, 'w')
 
-        stringa = 'GPSMax,SNRMax,FreqMax,GPSstart,Duration,WaveletFam'
-        for i in range(self.Ncoeff):
-            stringa += ',' + 'WavCoeff' + str(i)
-        stringa += '\n'
-        self.f.write(stringa)
 
     def update(self, Cev):
         self.file_exists = os.path.isfile(self.filesave)
-        stringa = repr(Cev.GPSMax) + ',' + repr(Cev.SNRMax) + ',' + repr(Cev.FreqMax) + ',' \
-                  + repr(Cev.GPSstart) + ',' + repr(Cev.Duration) + ',' + repr(Cev.WaveletFam)
-        for i in range(self.Ncoeff):
-            stringa += ',' + repr(Cev.getWavCoeff(i))
-        stringa += '\n'
-        self.f.write(stringa)
-        self.f.flush()
-
-        #with open(self.filesave, 'ab') as output:
-        #    pickle.dump(self.CEV, output)
-
+        self.CEV = Cev.__dict__
+        with open(self.filesave, 'a') as csvfile:
+            headers = sorted(self.CEV.keys())
+            writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=headers)
+            if not self.file_exists:
+                writer.writeheader()
+            writer.writerow(self.CEV)
