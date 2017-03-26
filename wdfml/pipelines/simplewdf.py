@@ -71,13 +71,12 @@ def main():
     streaming.SetDataLength(par.len)
 
     WDF = wdf(par)
-    observable = Observable()
-    observableO = Observable()
-    clustering = Clustering(par)
-    savetrigger = PrintTriggers(par)
-    observable.register(clustering)
-    observableO.register(savetrigger)
 
+
+    clustering = Clustering(par)
+    WDF.register(clustering)
+    savetrigger = PrintTriggers(par)
+    clustering.register(savetrigger)
     ###Start detection loop
     print("Starting detection loop")
     while data.GetStart() < par.gpsEnd:
@@ -85,12 +84,9 @@ def main():
         ds.Process(data, data_ds)
         whiten.Process(data_ds, dataw)
         WDF.SetData(dataw)
-        while WDF.wdf2classify.GetDataNeeded() > 0:
-            ev = WDF.FindEvents()
-            observable.update_observers(ev)
-            cev = clustering.CEV
-            if (cev != None and cev.GPSstart > 0.0):
-                observableO.update_observers(cev)
+        WDF.Process()
+
+
 
     print('Program terminated')
     par.dump(par.outdir + "fileParametersUsed.json")

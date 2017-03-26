@@ -10,16 +10,19 @@ import logging
 from pytsa.tsa import *
 
 from wdfml.observers.observer import Observer
+from wdfml.observers.observable import Observable
 from wdfml.structures.ClusteredEvent import *
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class Clustering(Observer):
+class Clustering(Observer,Observable):
     def __init__ ( self, parameters ):
         """
         :type parameters: class Parameters object
         """
+        Observable.__init__(self)
+        Observer.__init__(self)
         self.deltaT = parameters.deltaT
         self.deltaSNR = parameters.deltaSNR
         self.clusteredEvent = ClusterizedEventFullFeatured(parameters.Ncoeff)
@@ -49,12 +52,15 @@ class Clustering(Observer):
             self.clusteredEvent.mWave = self.WaveMax  # wavelet at peak
             self.CEV = ClusteredEvent(self.clusteredEvent,self.Ncoeff)
 
+            if (self.CEV != None and self.CEV.GPSstart > 0.0):
+                self.update_observers(self.CEV)
             self.clusteredEvent = ClusterizedEventFullFeatured(self.Ncoeff)
             self.evP.EVcopy(event)
             self.evN.EVcopy(event)
             ##new values to identify next peak
             self.SNRmax = event.mSNR
-            self.TimeMax = event.mTime
+            self.TimeMax = event.mTime  #fare update
+            # cev = clustering.CEV
             for i in range(0, self.Ncoeff):
                 self.Cmax[i] = event.GetCoeff(i)
             self.WaveMax = event.mWave

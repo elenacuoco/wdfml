@@ -2,17 +2,15 @@ __author__ = 'Elena Cuoco'
 __project__ = 'wdfml'
 
 from pytsa.tsa import *
+from  wdfml.observers.observable import *
 
-
-class wdf(object):
+class wdf(Observable):
     def __init__ ( self, parameters ):
         """
-
         :type parameters: class Parameters
         """
-
+        Observable.__init__(self)
         self.parameters = parameters
-
         self.wdf2classify = WDF2Classify(self.parameters.window,
                                          self.parameters.overlap,
                                          self.parameters.threshold,
@@ -40,3 +38,8 @@ class wdf(object):
         # to be multiplied by central frequency
         self.wdf2classify(self.trigger)
         return self.trigger
+
+    def Process(self):
+        while self.wdf2classify.GetDataNeeded() > 0:
+            ev = self.FindEvents()
+            self.update_observers(ev)
