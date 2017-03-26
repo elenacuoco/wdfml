@@ -31,7 +31,7 @@ class ClusteredEvent(object):
         self.GPSstart = 0
         self.Duration = 0
         self.WaveletFam = ""
-        self.WavCoeff = np.zeros(Ncoeff)
+        self.WavCoeff = []
 
 
     def update(self, t0, SNR, freq, tmax, duration, Wave, Coeff):
@@ -41,4 +41,4 @@ class ClusteredEvent(object):
         self.GPSstart = t0
         self.Duration = duration
         self.WaveletFam = Wave
-        self.WavCoeff = np.asarray(Coeff)
+        self.WavCoeff = list(Coeff)
