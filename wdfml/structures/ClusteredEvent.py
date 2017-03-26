@@ -11,6 +11,7 @@ import numpy as np
 from collections import OrderedDict
 from scipy.sparse import csr_matrix
 
+
 class OrderedMeta(type):
     @classmethod
     def __prepare__(metacls, name, bases):
@@ -23,18 +24,21 @@ class OrderedMeta(type):
 
 
 class ClusteredEvent(object):
-    def __init__(self, Cev, Ncoeff):
-        self.GPSMax = Cev.mTimeMax
-        self.SNRMax = Cev.mSNR
-        self.FreqMax = Cev.mlevel
-        self.GPSstart = Cev.mTime
-        self.Duration = Cev.mLenght
-        self.WaveletFam = Cev.mWave
-        self.WavCoeff = csr_matrix([Cev.GetCoeff(i) for i in range(Ncoeff)])
-        # for i in range(Ncoeff):
-        #    key='WavCoeff'+str(i)
-        #    setattr(self, key,  Cev.GetCoeff(i))
+    def __init__(self, Ncoeff):
+        self.GPSMax = 0
+        self.SNRMax = 0
+        self.FreqMax = 0
+        self.GPSstart = 0
+        self.Duration = 0
+        self.WaveletFam = ""
+        self.WavCoeff = np.zeros(Ncoeff)
 
-        # def getWavCoeff(self,i):
-        #   key = 'WavCoeff' + str(i)
-        #   return getattr(self, key)
+
+    def update(self, t0, SNR, freq, tmax, duration, Wave, Coeff):
+        self.GPSMax = tmax
+        self.SNRMax = SNR
+        self.FreqMax = freq
+        self.GPSstart = t0
+        self.Duration = duration
+        self.WaveletFam = Wave
+        self.WavCoeff = np.asarray(Coeff)

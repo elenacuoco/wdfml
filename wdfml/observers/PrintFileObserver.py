@@ -18,7 +18,7 @@ class PrintTriggers(Observer):
     def __init__(self, par):
         self.filesave = par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
             par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
-        self.Ncoeff = par.Ncoeff
+
         try:
             os.remove(self.filesave)
         except OSError:

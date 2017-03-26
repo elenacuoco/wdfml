@@ -71,12 +71,10 @@ def main():
     streaming.SetDataLength(par.len)
 
     WDF = wdf(par)
-
-
     clustering = Clustering(par)
-    WDF.register(clustering)
     savetrigger = PrintTriggers(par)
     clustering.register(savetrigger)
+    WDF.register(clustering)
     ###Start detection loop
     print("Starting detection loop")
     while data.GetStart() < par.gpsEnd:
@@ -85,9 +83,6 @@ def main():
         whiten.Process(data_ds, dataw)
         WDF.SetData(dataw)
         WDF.Process()
-
-
-
     print('Program terminated')
     par.dump(par.outdir + "fileParametersUsed.json")
     elapsed_time = time.time() - start_time

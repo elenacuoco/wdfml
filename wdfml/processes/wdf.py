@@ -41,5 +41,5 @@ class wdf(Observable):
 
     def Process(self):
         while self.wdf2classify.GetDataNeeded() > 0:
-            ev = self.FindEvents()
-            self.update_observers(ev)
+            self.wdf2classify(self.trigger)
+            self.update_observers(self.trigger)
