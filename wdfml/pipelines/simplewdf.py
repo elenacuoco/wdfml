@@ -18,7 +18,7 @@ def main():
     logging.basicConfig(level=logging.INFO)
     logging.info("read Parameters")
     par = Parameters()
-    par.load("fileParameters.json")
+    par.load("fileParametersVirgo.json")
     ID = str(par.chan) + '_' + str(par.gps)
     par.outdir = par.outdir + ID + '/'
     if not os.path.exists(par.outdir):
