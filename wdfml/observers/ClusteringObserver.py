@@ -45,7 +45,6 @@ class Clustering(Observer, Observable):
         if np.fabs(event.mTime - self.evN.mTime) > self.deltaT \
                 or (np.fabs(event.mSNR - self.evN.mSNR) / (self.evN.mSNR + 1.0)) > self.deltaSNR:
             self.CEV.update(self.evP.mTime, self.SNRmax, self.ClevelMax,self.TimeMax, np.fabs(self.evN.mTime - self.evP.mTime), self.WaveMax,self.Cmax)
-
             self.update_observers(self.CEV)
             self.evP.EVcopy(event)
             self.evN.EVcopy(event)
@@ -56,7 +55,7 @@ class Clustering(Observer, Observable):
             for i in range(0, self.Ncoeff):
                 self.Cmax[i] = event.GetCoeff(i)
             self.WaveMax = event.mWave
-            self.ClevelMax = event.mlevel * self.factorF  # insert triggers into file
+            self.ClevelMax = event.mlevel* self.factorF
 
         else:
             self.evN.EVcopy(event)
@@ -66,4 +65,4 @@ class Clustering(Observer, Observable):
                 for i in range(0, self.Ncoeff):
                     self.Cmax[i] = event.GetCoeff(i)
                 self.WaveMax = event.mWave
-                self.ClevelMax = event.mlevel
+                self.ClevelMax = event.mlevel * self.factorF

@@ -13,12 +13,12 @@ from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
 
 
-def main():
+def main(param):
     start_time = time.time()
     logging.basicConfig(level=logging.INFO)
     logging.info("read Parameters")
     par = Parameters()
-    par.load("fileParameters.json")
+    par.load(param)
     ID = str(par.chan) + '_' + str(par.gps)
     par.outdir = par.outdir + ID + '/'
     if not os.path.exists(par.outdir):
