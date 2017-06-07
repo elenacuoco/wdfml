@@ -41,6 +41,12 @@ def main(param):
         Learn = SV()
         Learn_DS = SV()
         learnlen = 2.0 * float(par.learn)
+        strLearn = FrameIChannel(par.file, par.chan, 1.0, gpsE)
+        strLearn.GetData(Learn)
+
+        par.sampling = int(1.0 / Learn.GetSampling())
+        par.resampling = int(sampling / 2)
+
         strLearn = FrameIChannel(par.file, par.chan, learnlen, gpsE)
         par.Noutdata = int(par.learn * par.resampling)
         ds = downsamplig(par)
