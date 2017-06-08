@@ -29,7 +29,7 @@ class PrintTriggers(Observer):
         self.file_exists = os.path.isfile(self.filesave)
         self.CEV = Cev.__dict__
         with open(self.filesave, 'a') as csvfile:
-            headers = sorted(self.CEV.keys())
+            headers = sorted(self.CEV.keys(), key=lambda x:x[:3])
             writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=headers)
             if not self.file_exists:
                 writer.writeheader()

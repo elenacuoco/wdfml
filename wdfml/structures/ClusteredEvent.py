@@ -31,7 +31,9 @@ class ClusteredEvent(object):
         self.GPSstart = 0
         self.Duration = 0
         self.WaveletFam = ""
-        self.WavCoeff = []
+        for i in range(Ncoeff):
+            setattr(self, "WaveCoeff"+str(i), 0.0)
+
 
 
     def update(self, t0, SNR, freq, tmax, duration, Wave, Coeff):
@@ -41,4 +43,6 @@ class ClusteredEvent(object):
         self.GPSstart = t0
         self.Duration = duration
         self.WaveletFam = Wave
-        self.WavCoeff = list(Coeff)
+        for i in range(len(Coeff)):
+            setattr(self, "WaveCoeff"+str(i), Coeff[i])
+
