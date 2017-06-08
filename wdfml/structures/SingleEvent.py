@@ -29,7 +29,9 @@ class SingleEvent(object):
         self.SNRMax = 0
         self.FreqMax = 0
         self.WaveletFam = ""
-        self.WavCoeff = []
+        for i in range(Ncoeff):
+            setattr(self, "WaveCoeff" + str(i), 0.0)
+
 
 
     def update(self, tmax, SNR, freq, Wave, Coeff):
@@ -37,4 +39,5 @@ class SingleEvent(object):
         self.SNRMax = SNR
         self.FreqMax = freq
         self.WaveletFam = Wave
-        self.WavCoeff = list(Coeff)
+        for i in range(len(Coeff)):
+            setattr(self, "WaveCoeff"+str(i), Coeff[i])

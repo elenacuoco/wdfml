@@ -24,7 +24,7 @@ class PrintTriggers(Observer):
         except OSError:
             pass
 
-
+### write on disk in ordered way
     def update(self, Cev):
         self.file_exists = os.path.isfile(self.filesave)
         self.CEV = Cev.__dict__
