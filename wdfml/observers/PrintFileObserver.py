@@ -6,7 +6,7 @@ __version__ = "1.0.0"
 __maintainer__ = "Elena Cuoco"
 __email__ = "elena.cuoco@ego-gw.it"
 __status__ = "Development"
-import logging
+
 
 from wdfml.observers.observer import Observer
 import csv
