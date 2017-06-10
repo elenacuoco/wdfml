@@ -13,7 +13,7 @@ from pymongo import MongoClient
 from wdfml.observers.observer import Observer
 
 
-class MongoDBConncetor(Observer):
+class MongoDBConnector(Observer):
     def __init__(self, par, mongoConf = { 'host':'localhost','port': 27017 }):
         self.client = MongoClient(mongoConf.host, mongoConf.port)
         self.db = self.client['WDFTriggers'];
