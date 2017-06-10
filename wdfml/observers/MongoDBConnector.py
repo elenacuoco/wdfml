@@ -14,19 +14,12 @@ from wdfml.observers.observer import Observer
 
 
 class MongoDBConnector(Observer):
-    def __init__(self, par, mongoConf = { 'host':'localhost','port': 27017 }):
-        self.client = MongoClient(mongoConf.host, mongoConf.port)
+    def __init__(self, par, host='localhost',port= 27017 ):
+        self.client = MongoClient(host, port)
         self.db = self.client['WDFTriggers'];
         self.param = par;
 
 ### write on disk in ordered way
     def update(self, Cev):
         self.CEV = Cev.__dict__
-        eventParam = {"chan": self.param.chan,
-                 "gpsStart": int(self.param.gpsStart),
-                 "ARorder": self.param.ARorder,
-                 "window": self.param.window,
-                 "overlap":self.param.overlap,
-                 "threshold": int(self.param.threshold)
-                 }
-        self.db.events.insert_one(dict( eventParam.items() +  self.CEV.items() ) )
+        self.db.events.insert_one(self.CEV)

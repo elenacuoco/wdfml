@@ -27,15 +27,16 @@ class Clustering(Observer, Observable):
         self.deltaT = parameters.deltaT
         self.deltaSNR = parameters.deltaSNR
         self.factorF = parameters.resampling / (2.0 * parameters.window)
+        self.Ncoeff = parameters.Ncoeff
         self.evP = EventFullFeatured(parameters.Ncoeff)
         self.evN = EventFullFeatured(parameters.Ncoeff)
+        self.CEV = ClusteredEvent(parameters.Ncoeff)
         self.Cmax = np.empty(parameters.Ncoeff)
         self.SNRmax = parameters.threshold
         self.ClevelMax = 0
         self.TimeMax = parameters.gpsStart
         self.WaveMax = 'initWave'
-        self.Ncoeff = parameters.Ncoeff
-        self.CEV = ClusteredEvent(self.Ncoeff)
+
         self.evP.mTime = parameters.gpsStart
         self.evN.mTime = parameters.gpsStart
         self.evN.mSNR = parameters.threshold
@@ -46,6 +47,9 @@ class Clustering(Observer, Observable):
                 or (np.fabs(event.mSNR - self.evN.mSNR) / (self.evN.mSNR + 1.0)) > self.deltaSNR:
             self.CEV.update(self.evP.mTime, self.SNRmax, self.ClevelMax,self.TimeMax, np.fabs(self.evN.mTime - self.evP.mTime), self.WaveMax,self.Cmax)
             self.update_observers(self.CEV)
+            self.evP = EventFullFeatured(self.Ncoeff)
+            self.evN = EventFullFeatured(self.Ncoeff)
+            self.CEV = ClusteredEvent(self.Ncoeff)
             self.evP.EVcopy(event)
             self.evN.EVcopy(event)
             ##new values to identify next peak
