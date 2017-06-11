@@ -16,6 +16,7 @@ from wdfml.structures.ClusteredEvent import *
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# @TODO modify the estimate of SNR. Use the local threshold with the dohono-johnstone
 
 class Clustering(Observer, Observable):
     def __init__(self, parameters):
@@ -30,7 +31,6 @@ class Clustering(Observer, Observable):
         self.Ncoeff = parameters.Ncoeff
         self.evP = EventFullFeatured(parameters.Ncoeff)
         self.evN = EventFullFeatured(parameters.Ncoeff)
-        self.CEV = ClusteredEvent(parameters.Ncoeff)
         self.Cmax = np.empty(parameters.Ncoeff)
         self.SNRmax = parameters.threshold
         self.ClevelMax = 0
@@ -44,11 +44,12 @@ class Clustering(Observer, Observable):
     def update(self, event):
         if np.fabs(event.mTime - self.evN.mTime) > self.deltaT \
                 or (np.fabs(event.mSNR - self.evN.mSNR) / (self.evN.mSNR + 1.0)) > self.deltaSNR:
-            self.CEV.update(self.evP.mTime, self.SNRmax, self.ClevelMax,self.TimeMax, np.fabs(self.evN.mTime - self.evP.mTime), self.WaveMax,self.Cmax)
-            self.update_observers(self.CEV)
+            CEV=ClusteredEvent(self.evP.mTime, self.SNRmax, self.ClevelMax,\
+                               self.TimeMax, np.fabs(self.evN.mTime - self.evP.mTime),  \
+                               self.WaveMax,self.Cmax)
+            self.update_observers(CEV)
             self.evP = EventFullFeatured(self.Ncoeff)
             self.evN = EventFullFeatured(self.Ncoeff)
-            self.CEV = ClusteredEvent(self.Ncoeff)
             self.evP.EVcopy(event)
             self.evN.EVcopy(event)
             ##new values to identify next peak
