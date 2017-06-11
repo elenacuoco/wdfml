@@ -5,7 +5,7 @@ from pytsa.tsa import *
 from  wdfml.observers.observable import *
 
 class wdf(Observable):
-    def __init__ ( self, parameters ):
+    def __init__ ( self, parameters,wTh=WaveletThreshold.cuoco):
         """
         :type parameters: class Parameters
         """
@@ -15,7 +15,8 @@ class wdf(Observable):
                                          self.parameters.overlap,
                                          self.parameters.threshold,
                                          self.parameters.sigma,
-                                         self.parameters.Ncoeff)
+                                         self.parameters.Ncoeff,
+                                         wTh)
         self.trigger = EventFullFeatured(self.parameters.Ncoeff)
 
     def SetData ( self, data ):
