@@ -37,6 +37,8 @@ class Clustering(Observer, Observable):
         self.ClevelMax = parameters.resampling / (2.0 * parameters.window)
         self.TimeMax = parameters.gpsStart
         self.WaveMax = 'Haar'
+        self.evP.mWave = 'Haar'
+        self.evN.mWave = 'Haar'
         self.evP.mTime = parameters.gpsStart
         self.evN.mTime = parameters.gpsStart
         self.evN.mSNR = parameters.threshold
