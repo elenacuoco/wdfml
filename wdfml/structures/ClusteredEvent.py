@@ -25,12 +25,12 @@ class OrderedMeta(type):
 
 class ClusteredEvent(object):
     def __init__(self, t0, SNR, freq, tmax, duration, Wave, Coeff):
-        self.GPSstart = t0
-        self.SNRMax = SNR
-        self.FreqMax = freq
-        self.GPSMax = tmax
-        self.Duration = duration
-        self.WaveletFam = Wave
+        self.gpsStart = t0
+        self.snrMax = SNR
+        self.freqMax = freq
+        self.gpsMax = tmax
+        self.duration = duration
+        self.waveletFam = Wave
         for i in range(len(Coeff)):
-            setattr(self, "WaveCoeff"+str(i), Coeff[i])
+            setattr(self, "waveCoeff"+str(i), Coeff[i])
 

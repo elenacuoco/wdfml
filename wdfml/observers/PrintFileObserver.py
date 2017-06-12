@@ -18,7 +18,7 @@ class PrintTriggers(Observer):
     def __init__(self, par):
         self.filesave = par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
             par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
-
+        self.id=0
         try:
             os.remove(self.filesave)
         except OSError:
@@ -28,6 +28,8 @@ class PrintTriggers(Observer):
     def update(self, Cev):
         self.file_exists = os.path.isfile(self.filesave)
         self.CEV = Cev.__dict__
+        self.id+=1
+        self.CEV['ID']=self.id
         with open(self.filesave, 'a') as csvfile:
             headers = sorted(self.CEV.keys(), key=lambda x:x[:3])
             writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=headers)

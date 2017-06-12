@@ -27,35 +27,36 @@ class Clustering(Observer, Observable):
         Observer.__init__(self)
         self.deltaT = parameters.deltaT
         self.deltaSNR = parameters.deltaSNR
+        self.deltaFeq = parameters.deltaFeq
         self.factorF = parameters.resampling / (2.0 * parameters.window)
         self.Ncoeff = parameters.Ncoeff
         self.evP = EventFullFeatured(parameters.Ncoeff)
         self.evN = EventFullFeatured(parameters.Ncoeff)
         self.Cmax = np.empty(parameters.Ncoeff)
         self.SNRmax = parameters.threshold
-        self.ClevelMax = 0
+        self.ClevelMax = parameters.resampling / (2.0 * parameters.window)
         self.TimeMax = parameters.gpsStart
-        self.WaveMax = 'initWave'
+        self.WaveMax = 'Haar'
         self.evP.mTime = parameters.gpsStart
         self.evN.mTime = parameters.gpsStart
         self.evN.mSNR = parameters.threshold
         self.evP.mSNR = parameters.threshold
+        self.evN.mlevel = parameters.resampling / (2.0 * parameters.window)
+        self.evP.mlevel = parameters.resampling / (2.0 * parameters.window)
 
     def update(self, event):
-        if np.fabs(event.mTime - self.evN.mTime) > self.deltaT \
-                or (np.fabs(event.mSNR - self.evN.mSNR) / (self.evN.mSNR + 1.0)) > self.deltaSNR:
+        if (np.fabs(event.mTime - self.evN.mTime) > self.deltaT)\
+                or ((np.fabs(event.mlevel - self.evN.mlevel)/self.evN.mlevel) > self.deltaFeq):
+            #or (np.fabs(event.mSNR - self.evN.mSNR) / (self.evN.mSNR + 1.0)) > self.deltaSNR:
             CEV=ClusteredEvent(self.evP.mTime, self.SNRmax, self.ClevelMax,\
                                self.TimeMax, np.fabs(self.evN.mTime - self.evP.mTime),  \
                                self.WaveMax,self.Cmax)
             self.update_observers(CEV)
-            self.evP = EventFullFeatured(self.Ncoeff)
-            self.evN = EventFullFeatured(self.Ncoeff)
             self.evP.EVcopy(event)
             self.evN.EVcopy(event)
             ##new values to identify next peak
             self.SNRmax = event.mSNR
-            self.TimeMax = event.mTime  # fare update
-            # cev = clustering.CEV
+            self.TimeMax = event.mTime
             for i in range(0, self.Ncoeff):
                 self.Cmax[i] = event.GetCoeff(i)
             self.WaveMax = event.mWave
