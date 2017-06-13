@@ -43,4 +43,5 @@ class wdf(Observable):
     def Process(self):
         while self.wdf2classify.GetDataNeeded() > 0:
             self.wdf2classify(self.trigger)
-            self.update_observers(self.trigger)
+            if self.trigger.mWave!='':
+                self.update_observers(self.trigger)

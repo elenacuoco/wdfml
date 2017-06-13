@@ -7,9 +7,8 @@ __maintainer__ = "Elena Cuoco"
 __email__ = "elena.cuoco@ego-gw.it"
 __status__ = "Development"
 
-import numpy as np
 from collections import OrderedDict
-from scipy.sparse import csr_matrix
+
 
 
 class OrderedMeta(type):
@@ -28,7 +27,7 @@ class SingleEvent(object):
         self.GPSMax = 0
         self.SNRMax = 0
         self.FreqMax = 0
-        self.WaveletFam = ""
+        self.WaveletFam = "Haar"
         for i in range(Ncoeff):
             setattr(self, "WaveCoeff" + str(i), 0.0)
 
