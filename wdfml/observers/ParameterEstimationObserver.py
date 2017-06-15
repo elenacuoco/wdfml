@@ -22,14 +22,11 @@ logger = logging.getLogger(__name__)
 
 def estimate_freq(sig,fs):
     freq, psd = signal.periodogram(sig, fs)
-    threshold = 0.1* max(abs(psd))
+    threshold = 0.2* max(abs(psd))
     mask = abs(psd) > threshold
     peaks = freq[mask]
-    #idx = np.argmax(peaks)
-    #freqmax=peaks[idx]
-
-    freq =np.mean(peaks)
-    return freq
+    freqmean =np.mean(peaks)
+    return freqmean
 
 class ParameterEstimation(Observer, Observable):
     def __init__ ( self, parameters ):
