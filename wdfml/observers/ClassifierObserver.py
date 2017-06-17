@@ -26,7 +26,7 @@ class Classifier(Observer):
         self.clf = clf
         self.label = 0
         self.nfeatures = self.parameters.Ncoeff + 3  # adding SNR,Freq and duration
-        self.features = np.empty(self.nfeatures)
+        self.features = np.zeros(self.nfeatures)
         self.classified = []
 
     def update ( self, Cev ):

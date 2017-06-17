@@ -16,9 +16,7 @@ from wdfml.structures.eventPE import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# @TODO modify the estimate of SNR. Use the local threshold with the dohono-johnstone
+#
 
 class Clustering(Observer, Observable):
     def __init__ ( self, par ):
@@ -31,10 +29,10 @@ class Clustering(Observer, Observable):
         self.deltaSNR = par.deltaSNR
         self.deltaFeq = par.deltaFeq
         self.Ncoeff = par.Ncoeff
-        self.evP = eventPE(par.gpsStart, 0., 0., '', np.empty(par.Ncoeff), np.empty(par.Ncoeff))
-        self.evN = eventPE(par.gpsStart, 0., 0., '', np.empty(par.Ncoeff), np.empty(par.Ncoeff))
-        self.CMax = np.empty(par.Ncoeff)
-        self.ICMax = np.empty(par.Ncoeff)
+        self.evP = eventPE(par.gpsStart, 0., 0., '', np.zeros(par.Ncoeff), np.zeros(par.Ncoeff))
+        self.evN = eventPE(par.gpsStart, 0., 0., '', np.zeros(par.Ncoeff), np.zeros(par.Ncoeff))
+        self.CMax = np.zeros(par.Ncoeff)
+        self.ICMax = np.zeros(par.Ncoeff)
         self.snr = 0.0
         self.freq = 0.0
         self.gpsStart = par.gpsStart

@@ -32,7 +32,7 @@ class Clustering(Observer, Observable):
         self.Ncoeff = parameters.Ncoeff
         self.evP = EventFullFeatured(parameters.Ncoeff)
         self.evN = EventFullFeatured(parameters.Ncoeff)
-        self.Cmax = np.empty(parameters.Ncoeff)
+        self.Cmax = np.zeros(parameters.Ncoeff)
         self.SNRmax = parameters.threshold
         self.ClevelMax = parameters.resampling / (2.0 * parameters.window)
         self.TimeMax = parameters.gpsStart

@@ -28,8 +28,8 @@ class eventPE(object):
         self.snr = snr
         self.freq = freq
         self.wave = wave
-        self.wt = np.empty(len(coeff))
-        self.rw = np.empty(len(Icoeff))
+        self.wt = np.zeros(len(coeff))
+        self.rw = np.zeros(len(Icoeff))
         for i in range(len(coeff)):
             self.wt[i] = coeff[i]
         for i in range(len(Icoeff)):

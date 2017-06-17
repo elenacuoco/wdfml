@@ -17,10 +17,11 @@ class PrintClusteredTriggers(Observer):
         self.filesave = par.dir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
             par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
         self.id = 0
-        try:
-            os.remove(self.filesave)
-        except OSError:
-            pass
+        if os.path.isfile(self.filesave):
+            try:
+                os.remove(self.filesave)
+            except OSError:
+                pass
         self.fullPrint = fullPrint
         self.headers=['gpsStart','snrMean','freqMean','gpsMax','snrMax','freqMax','duration','wave']
         self.headersFull= ['gpsStart','snrMean','freqMean','gpsMax','snrMax','freqMax','duration','wave']

@@ -15,22 +15,22 @@ from pytsa import *
 
 class DefineSegments(Observer):
     def __init__(self, par):
-        self.segmentslist = []
+        self.segmentslist = ([])
 
 ### write on disk in ordered way
     def update(self,frame_t,ifo,bitmask_ifo,DQ_channel_rate_ifo,bitmask_list):
         states=map(lambda x:int(float(x.strip())) & bitmask_ifo,bitmask_list.split("\n"))
         print("states=%s" % (repr(states)))
-        #s = self.segmentslist
-        #rate = dq_channel_rate_ifo
-        #nsec = len(states) / rate
-        #for q in range(0, nsec):
-        #    fstart = frame_t.start + q
-        #    bad = 0
-        #for b in range(0, rate):
-        #    if (states[q * rate + b] != bitmask_ifo):
-        #        bad = 1
-        #if bad == 0:
-        #    s.append(segment(fstart, fstart + 1))
-        #s.coalesce()
-        #return s
+        s = self.segmentslist
+        rate = dq_channel_rate_ifo
+        nsec = len(states) / rate
+        for q in range(0, nsec):
+            fstart = frame_t.start + q
+            bad = 0
+        for b in range(0, rate):
+            if (states[q * rate + b] != bitmask_ifo):
+                bad = 1
+        if bad == 0:
+           s.append(segment(fstart, fstart + 1))
+        s.coalesce()
+        return s

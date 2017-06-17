@@ -42,8 +42,8 @@ class ParameterEstimation(Observer, Observable):
     def update ( self, event ):
         wave = event.mWave
         t0 = event.mTime
-        coeff = np.empty(self.Ncoeff)
-        Icoeff = np.empty(self.Ncoeff)
+        coeff = np.zeros(self.Ncoeff)
+        Icoeff = np.zeros(self.Ncoeff)
         for i in range(self.Ncoeff):
             coeff[i] = event.GetCoeff(i)
 

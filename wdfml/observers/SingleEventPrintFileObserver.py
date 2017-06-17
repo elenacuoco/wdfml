@@ -12,11 +12,11 @@ from wdfml.observers.observer import Observer
 import csv
 import os.path
 from wdfml.structures.SingleEvent import *
-
+import numpy as np
 
 class SingleEventPrintTriggers(Observer):
     def __init__(self, par):
-        self.filesave = par.outdir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
+        self.filesave = par.dir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
             par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
         self.event = SingleEvent(par.window)
         self.Ncoeff=par.window
@@ -28,7 +28,7 @@ class SingleEventPrintTriggers(Observer):
 
     def update(self, ev):
         self.file_exists = os.path.isfile(self.filesave)
-        Cmax=np.empty(self.Ncoeff)
+        Cmax=np.zeros(self.Ncoeff)
         for i in range(0, self.Ncoeff):
             Cmax[i] = ev.GetCoeff(i)
         self.event.update(ev.mTime, ev.mSNR, ev.mlevel, ev.mWave, Cmax)
