@@ -46,10 +46,9 @@ class Clustering(Observer, Observable):
         self.snrMax = 0.0
 
     def update ( self, event ):
-        if (np.fabs(event.gps - self.evN.gps) > self.deltaT) \
-                or (np.fabs(event.freq - self.evN.freq) / (self.evN.freq + 1.0)) > self.deltaFeq \
-                or (np.fabs(event.snr - self.evN.snr) / (self.evN.snr + 1.0)) > self.deltaSNR:
-
+        if (np.fabs(event.gps - self.evN.gps) >= self.deltaT) \
+                or (np.fabs(event.freq - self.evN.freq) / (self.evN.freq + 1.0)) >= self.deltaFeq \
+                or (np.fabs(event.snr - self.evN.snr) / (self.evN.snr + 1.0)) >= self.deltaSNR:
             self.freqMean /= self.num_ev
             self.snrMean /= self.num_ev
             CEV = ClusteredEvent(self.evP.gps, self.snrMean, self.freqMean, \

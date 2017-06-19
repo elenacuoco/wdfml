@@ -24,6 +24,9 @@ class downsamplig(object):
 
         self.BLfilter = BLInterpolation(1, self.Noutdata, self.sampling, self.resampling, self.BLfilterOrder)
 
+    def GetDataAvailable(self):
+        return self.BLfilter.GetDataAvailable()
+
     def Process(self, data, data_ds):
         self.BLfilter.Input(data)
         if self.BLfilter.GetDataAvailable() >= self.Noutdata:
