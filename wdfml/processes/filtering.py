@@ -28,8 +28,9 @@ class downsamplig(object):
         return self.BLfilter.GetDataAvailable()
 
     def Process(self, data, data_ds):
+
         self.BLfilter.Input(data)
-        if self.BLfilter.GetDataAvailable() >= self.Noutdata:
+        if self.BLfilter.GetDataAvailable() > self.Noutdata:
             self.BLfilter.Output(data_ds)
         else:
             print('not enough input data')
