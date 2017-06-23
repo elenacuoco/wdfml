@@ -53,5 +53,5 @@ class createSegments(Observable):
                 else:
                     continue
             except:
-                logging.info("wait for data")
+                #logging.info("wait for data")
                 continue
