@@ -32,8 +32,9 @@ class wdfWorkerObserver(Observer, Observable):
     def update ( self, segment ):
         try:
             wdfworker = wdfWorker(self.par)
-            self.pool.map(wdfworker.segmentProcess, segment)
-
+            self.pool.map_async(wdfworker.segmentProcess, segment)
+            #self.pool.close()
+            #self.pool.join()
         except KeyboardInterrupt:
-            self.pool.close()
+            self.pool.terminate()
 

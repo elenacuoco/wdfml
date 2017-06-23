@@ -95,7 +95,7 @@ class wdfWorker( object ):
 
         clustering = Clustering(self.par)
         # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
-        savetrigger = PrintClusteredTriggers(self.par, fullPrint=0)
+        savetrigger = PrintClusteredTriggers(self.par, fullPrint=1)
         parameterestimation = ParameterEstimation(self.par)
         parameterestimation.register(clustering)
         clustering.register(savetrigger)
