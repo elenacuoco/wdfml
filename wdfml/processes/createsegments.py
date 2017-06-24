@@ -43,8 +43,7 @@ class createSegments(Observable):
                     else:
                         continue
             except:
-                logging.warning("waiting for new acquired data")
-                logging.warning("GPStime before sleep: %s" % Info.GetX(0))
+                colorlog.warning("GPS time: %s. Waiting for new acquired data"% Info.GetX(0))
                 tstart = Info.GetX(0)
                 itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart - 1)
                 time.sleep(2000)
