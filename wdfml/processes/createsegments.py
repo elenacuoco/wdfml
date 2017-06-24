@@ -7,8 +7,8 @@ from  wdfml.observers.observable import *
 from wdfml.structures.segment import *
 import logging
 import time
-
-logging.basicConfig(level=logging.INFO)
+import colorlog
+logging.basicConfig(level=logging.DEBUG)
 
 class createSegments(Observable):
     def __init__ ( self, parameters ):
@@ -35,7 +35,7 @@ class createSegments(Observable):
                     if (timeslice >= self.minSlice):
                         gpsEnd = Info.GetX(0)
                         gpsStart = gpsEnd - timeslice
-                        logging.info(
+                        colorlog.info(
                             "New science segment created: Start %s End %s Duration %s" % (
                                 gpsStart, gpsEnd, timeslice))
                         self.update_observers([[gpsStart, gpsEnd]])
@@ -43,10 +43,10 @@ class createSegments(Observable):
                     else:
                         continue
             except:
-                logging.info("waiting for new acquired data")
-                logging.info("GPStime before sleep: %s" % Info.GetX(0))
+                logging.warning("waiting for new acquired data")
+                logging.warning("GPStime before sleep: %s" % Info.GetX(0))
                 tstart = Info.GetX(0)
                 itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart - 1)
                 time.sleep(2000)
-                logging.info("GPStime after sleep: %s" % Info.GetX(0))
+
             continue
