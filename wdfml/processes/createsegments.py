@@ -20,12 +20,15 @@ class createSegments(Observable):
         self.state_chan = parameters.state_chan
         self.gps = parameters.gps
         self.minSlice = parameters.minSlice
+        self.lastGPS = parameters.lastGPS
 
     def Process ( self ):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.
-        while True:
+        start=self.gps
+        while start<=self.lastGPS:
+
             try:
                 itfStatus.GetData(Info)
                 # logging.info("GPStime: %s" % Info.GetX(0))
@@ -44,8 +47,7 @@ class createSegments(Observable):
                         continue
             except:
                 colorlog.warning("GPS time: %s. Waiting for new acquired data"% Info.GetX(0))
-                tstart = Info.GetX(0)
-                itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart - 1)
                 time.sleep(2000)
 
             continue
+            start=Info.GetX(0)

@@ -22,14 +22,15 @@ class createSegments(Observable):
         self.minSlice = parameters.minSlice
         self.maxSlice = parameters.maxSlice
         self.maxSeg = parameters.nproc
+        self.lastGPS = parameters.lastGPS
 
     def Process ( self ):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.
         lista_segments=[]
-        while True:
-            # time.sleep(10)
+        start = self.gps
+        while start <= self.lastGPS:
             if (len(lista_segments)<self.maxSeg):
                 itfStatus.GetData(Info)
                 if Info.GetY(0, 0) == 1:
@@ -61,3 +62,4 @@ class createSegments(Observable):
                 timeslice = 0.
                 lista_segments=[]
                 continue
+            start = Info.GetX(0)

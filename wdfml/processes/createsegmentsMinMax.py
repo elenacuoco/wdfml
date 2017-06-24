@@ -22,12 +22,14 @@ class createSegments(Observable):
         self.gps = parameters.gps
         self.minSlice = parameters.minSlice
         self.maxSlice = parameters.maxSlice
+        self.lastGPS = parameters.lastGPS
 
     def Process ( self ):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.
-        while True:
+        start = self.gps
+        while start <= self.lastGPS:
             try:
                 itfStatus.GetData(Info)
                 # logging.info("GPStime: %s" % Info.GetX(0))
@@ -61,3 +63,4 @@ class createSegments(Observable):
                 time.sleep(2000)
                 logging.info("GPStime after sleep: %s" % Info.GetX(0))
             continue
+            start = Info.GetX(0)
