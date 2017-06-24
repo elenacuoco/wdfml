@@ -6,7 +6,7 @@ from pytsa.tsa import SeqView_double_t as SV
 from  wdfml.observers.observable import *
 from wdfml.structures.segment import *
 import logging
-
+import time
 logging.basicConfig(level=logging.INFO)
 
 
@@ -53,5 +53,6 @@ class createSegments(Observable):
                 else:
                     continue
             except:
-                #logging.info("wait for data")
+                logging.info("waiting for new acquired data")
+                time.sleep(600)
                 continue
