@@ -18,15 +18,16 @@ from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
 import time
 
-class wdfWorker( object ):
-    def __init__ ( self, parameters):
-        self.par=Parameters()
+
+class wdfWorker(object):
+    def __init__ ( self, parameters ):
+        self.par = Parameters()
         self.par.copy(parameters)
         self.par.deltaT = 1.5 * (parameters.window - parameters.overlap) / parameters.resampling
         self.par.Ncoeff = parameters.window
         self.learnlen = 1.5 * float(parameters.learn)
 
-    def segmentProcess(self,segment):
+    def segmentProcess ( self, segment ):
         gpsStart = segment[0]
         gpsEnd = segment[1]
         print("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
@@ -52,6 +53,7 @@ class wdfWorker( object ):
             # self.parameter for sequence of data.
             # Add a 10.0 seconds delay to not include too much after lock noise in the estimation
             gpsE = gpsStart + 10.0
+
             strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
             Learn = SV()
             Learn_DS = SV()
@@ -76,7 +78,8 @@ class wdfWorker( object ):
         # self.parameter for sequence of data and the resampling
         self.par.Noutdata = int(self.par.len * self.par.resampling)
         ds = downsamplig(self.par)
-        streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsStart)
+        gpsstart = gpsStart - self.par.preWhite * self.par.len
+        streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsstart)
         data = SV()
         data_ds = SV()
         dataw = SV()

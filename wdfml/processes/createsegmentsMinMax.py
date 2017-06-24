@@ -10,6 +10,7 @@ import time
 
 logging.basicConfig(level=logging.INFO)
 
+
 class createSegments(Observable):
     def __init__ ( self, parameters ):
         """
@@ -20,6 +21,7 @@ class createSegments(Observable):
         self.state_chan = parameters.state_chan
         self.gps = parameters.gps
         self.minSlice = parameters.minSlice
+        self.maxSlice = parameters.maxSlice
 
     def Process ( self ):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
@@ -42,11 +44,20 @@ class createSegments(Observable):
                         timeslice = 0.
                     else:
                         continue
+                if (timeslice >= self.maxSlice):
+                    gpsEnd = Info.GetX(0)
+                    gpsStart = gpsEnd - timeslice
+                    logging.info(
+                        "New science segment created: Start %s End %s Duration %s" % (gpsStart, gpsEnd, timeslice))
+                    self.update_observers([[gpsStart, gpsEnd]])
+                    timeslice = 0.
+                else:
+                    continue
             except:
                 logging.info("waiting for new acquired data")
                 logging.info("GPStime before sleep: %s" % Info.GetX(0))
-                tstart = Info.GetX(0)
-                itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart - 1)
+                tstart=Info.GetX(0)
+                itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart-1)
                 time.sleep(2000)
                 logging.info("GPStime after sleep: %s" % Info.GetX(0))
             continue
