@@ -54,5 +54,5 @@ class createSegments(Observable):
                     continue
             except:
                 logging.info("waiting for new acquired data")
-                time.sleep(600)
+                time.sleep(1200)
                 continue

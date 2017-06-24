@@ -52,7 +52,6 @@ class wdfWorker( object ):
             # self.parameter for sequence of data.
             # Add a 10.0 seconds delay to not include too much after lock noise in the estimation
             gpsE = gpsStart + 10.0
-
             strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
             Learn = SV()
             Learn_DS = SV()
@@ -77,8 +76,7 @@ class wdfWorker( object ):
         # self.parameter for sequence of data and the resampling
         self.par.Noutdata = int(self.par.len * self.par.resampling)
         ds = downsamplig(self.par)
-        gpsstart = gpsStart - self.par.preWhite * self.par.len
-        streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsstart)
+        streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsStart)
         data = SV()
         data_ds = SV()
         dataw = SV()
