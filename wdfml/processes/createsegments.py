@@ -5,9 +5,9 @@ from pytsa.tsa import *
 from pytsa.tsa import SeqView_double_t as SV
 from  wdfml.observers.observable import *
 from wdfml.structures.segment import *
-import logging
+
 import time
-import colorlog
+import logging
 logging.basicConfig(level=logging.DEBUG)
 
 class createSegments(Observable):
@@ -38,7 +38,7 @@ class createSegments(Observable):
                     if (timeslice >= self.minSlice):
                         gpsEnd = Info.GetX(0)
                         gpsStart = gpsEnd - timeslice
-                        colorlog.info(
+                        logging.info(
                             "New science segment created: Start %s End %s Duration %s" % (
                                 gpsStart, gpsEnd, timeslice))
                         self.update_observers([[gpsStart, gpsEnd]])
@@ -46,7 +46,7 @@ class createSegments(Observable):
                     else:
                         continue
             except:
-                colorlog.warning("GPS time: %s. Waiting for new acquired data"% Info.GetX(0))
+                logging.warning("GPS time: %s. Waiting for new acquired data"% Info.GetX(0))
                 time.sleep(2000)
 
             continue

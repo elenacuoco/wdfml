@@ -17,7 +17,7 @@ from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
 import time
-import colorlog
+
 
 class wdfWorker(object):
     def __init__ ( self, parameters ):
@@ -30,7 +30,7 @@ class wdfWorker(object):
     def segmentProcess ( self, segment ):
         gpsStart = segment[0]
         gpsEnd = segment[1]
-        colorlog.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
+        logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
         start_time = time.time()
         ID = str(self.par.run) + "_" + str(self.par.channel) + '_' + str(int(gpsStart))
         dir_chunk = self.par.outdir + ID + '/'
@@ -45,10 +45,10 @@ class wdfWorker(object):
             self.par.ARorder, self.par.resampling, self.par.channel)
 
         if os.path.isfile(self.par.ARfile) and os.path.isfile(self.par.LVfile):
-            colorlog.info('Load AR self.parameter')
+            logging.info('Load AR self.parameter')
             whiten.ParametersLoad(self.par.ARfile, self.par.LVfile)
         else:
-            colorlog.info('Start AR self.parameter estimation')
+            logging.info('Start AR self.parameter estimation')
             ######## read data for AR estimation###############
             # self.parameter for sequence of data.
             # Add a 10.0 seconds delay to not include too much after lock noise in the estimation
@@ -66,7 +66,7 @@ class wdfWorker(object):
             del Learn, ds, strLearn, Learn_DS
         # sigma for the noise
         self.par.sigma = 2.0 * whiten.GetSigma()
-        colorlog.info('Estimated sigma= %s' % self.par.sigma)
+        logging.info('Estimated sigma= %s' % self.par.sigma)
         ## update the self.parameters to be saved in local json file
         self.par.ID = ID
         self.par.dir = dir_chunk
@@ -104,7 +104,7 @@ class wdfWorker(object):
         filejson = 'parametersUsed.json'
         self.par.dump(self.par.dir + filejson)
         ###Start detection loop
-        colorlog.info("Starting detection loop")
+        logging.info("Starting detection loop")
 
         while data.GetStart() < gpsEnd:
             streaming.GetData(data)
@@ -115,4 +115,4 @@ class wdfWorker(object):
 
         elapsed_time = time.time() - start_time
         timeslice = gpsEnd - gpsStart
-        colorlog.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
+        logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
