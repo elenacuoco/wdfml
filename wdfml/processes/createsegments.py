@@ -8,7 +8,9 @@ from wdfml.structures.segment import *
 
 import time
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
+
 
 class createSegments(Observable):
     def __init__ ( self, parameters ):
@@ -26,13 +28,12 @@ class createSegments(Observable):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.
-        start=self.gps
-        while start<=self.lastGPS:
-
+        start = self.gps
+        while start <= self.lastGPS:
             try:
                 itfStatus.GetData(Info)
-                # logging.info("GPStime: %s" % Info.GetX(0))
                 if Info.GetY(0, 0) == 1:
+                    start = Info.GetX(0)
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
@@ -46,11 +47,17 @@ class createSegments(Observable):
                     else:
                         continue
             except:
-                start= Info.GetX(0)
-                logging.warning("GPS time: %s. Waiting for new acquired data"% start)
-                itfStatus = FrameIChannel(self.file, self.state_chan, 1., start)
-                timeslice-=1.0
+                start = Info.GetX(0)
+                logging.warning("GPS time: %s. Waiting for new acquired data" % start)
+                itfStatus.SetStart(start)
                 time.sleep(3600)
 
-            continue
-            start=Info.GetX(0)
+
+        gpsEnd = start
+        gpsStart = gpsEnd - timeslice
+        logging.info(
+                "New science segment created: Start %s End %s Duration %s" % (
+                    gpsStart, gpsEnd, timeslice))
+        self.update_observers([[gpsStart, gpsEnd]])
+        self.unregister_all()
+
