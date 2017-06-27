@@ -29,11 +29,10 @@ class createSegments(Observable):
         Info = SV()
         timeslice = 0.
         start = self.gps
-        while start <= self.lastGPS:
+        while start < self.lastGPS:
             try:
                 itfStatus.GetData(Info)
                 if Info.GetY(0, 0) == 1:
-                    start = Info.GetX(0)
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
@@ -46,18 +45,19 @@ class createSegments(Observable):
                         timeslice = 0.
                     else:
                         continue
+                start = Info.GetX(0)
             except:
                 start = Info.GetX(0)
                 logging.warning("GPS time: %s. Waiting for new acquired data" % start)
                 itfStatus.SetStart(start)
                 time.sleep(3600)
 
-
-        gpsEnd = start
-        gpsStart = gpsEnd - timeslice
-        logging.info(
-                "New science segment created: Start %s End %s Duration %s" % (
-                    gpsStart, gpsEnd, timeslice))
-        self.update_observers([[gpsStart, gpsEnd]])
+        gpsEnd = self.lastGPS
+        if(timeslice>0.):
+            gpsStart = gpsEnd - timeslice+1.0
+            logging.info(
+                    "New science segment created: Start %s End %s Duration %s" % (
+                        gpsStart, gpsEnd, timeslice))
+            self.update_observers([[gpsStart, gpsEnd]])
         self.unregister_all()
 
