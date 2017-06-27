@@ -57,7 +57,7 @@ class createSegments(Observable):
             gpsStart = gpsEnd - timeslice+1.0
             logging.info(
                     "New science segment created: Start %s End %s Duration %s" % (
-                        gpsStart, gpsEnd, timeslice))
+                        gpsStart, gpsEnd, (gpsEnd-gpsStart)))
             self.update_observers([[gpsStart, gpsEnd]])
         self.unregister_all()
 
