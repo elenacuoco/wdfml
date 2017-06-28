@@ -19,7 +19,7 @@ from wdfml.processes.wdfWorker import *
 # @autojit
 
 class wdfWorkerObserver(Observer, Observable):
-    def __init__ ( self, parameters ):
+    def __init__ ( self, parameters,fullPrint=0):
         """
         :type self.parameters: class self.parameters object
         """
@@ -29,7 +29,7 @@ class wdfWorkerObserver(Observer, Observable):
 
         self.par = Parameters()
         self.par.copy(parameters)
-        self.wdfworker = wdfWorker(self.par, fullPrint=0)
+        self.wdfworker = wdfWorker(self.par, fullPrint)
 
     def wait_completion ( self ):
         """ Wait for completion of all the tasks in the queue """
