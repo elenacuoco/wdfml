@@ -20,13 +20,13 @@ import time
 
 
 class wdfWorker(object):
-    def __init__ ( self, parameters ):
+    def __init__ ( self, parameters,fullPrint=1):
         self.par = Parameters()
         self.par.copy(parameters)
         #self.par.deltaT = 1.5 * (parameters.window - parameters.overlap) / parameters.resampling
         self.par.Ncoeff = parameters.window
         self.learnlen = 1.5 * float(parameters.learn)
-
+        self.fullPrint=fullPrint
     def segmentProcess ( self, segment ):
         gpsStart = segment[0]
         gpsEnd = segment[1]
@@ -96,7 +96,7 @@ class wdfWorker(object):
 
         clustering = Clustering(self.par)
         # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
-        savetrigger = PrintClusteredTriggers(self.par, fullPrint=1)
+        savetrigger = PrintClusteredTriggers(self.par, self.fullPrint)
         parameterestimation = ParameterEstimation(self.par)
         parameterestimation.register(clustering)
         clustering.register(savetrigger)

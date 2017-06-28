@@ -41,7 +41,7 @@ class createSegments(Observable):
                         logging.info(
                             "New science segment created: Start %s End %s Duration %s" % (
                                 gpsStart, gpsEnd, timeslice))
-                        self.update_observers([[gpsStart, gpsEnd]])
+                        self.update_observers([[gpsStart, gpsEnd]],last=0)
                         timeslice = 0.
                     else:
                         continue
@@ -49,15 +49,13 @@ class createSegments(Observable):
             except:
                 start = Info.GetX(0)
                 logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                itfStatus.SetStart(start)
                 time.sleep(3600)
 
         gpsEnd = self.lastGPS
-        if(timeslice>0.):
-            gpsStart = gpsEnd - timeslice+1.0
+        if (timeslice > 0.):
+            gpsStart = gpsEnd - timeslice + 1.0
             logging.info(
-                    "New science segment created: Start %s End %s Duration %s" % (
-                        gpsStart, gpsEnd, (gpsEnd-gpsStart)))
-            self.update_observers([[gpsStart, gpsEnd]])
+                "New science segment created: Start %s End %s Duration %s" % (
+                    gpsStart, gpsEnd, (gpsEnd - gpsStart)))
+            self.update_observers([[gpsStart, gpsEnd]],last=1)
         self.unregister_all()
-
