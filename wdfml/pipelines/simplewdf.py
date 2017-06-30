@@ -72,7 +72,7 @@ def main(param):
     ### WDF process
     # sigma for the noise
     par.sigma = whiten.GetSigma()
-    print('Estimated sigma= %s' % par.sigma)
+    logging.info('Estimated sigma= %s' % par.sigma)
     par.Ncoeff = par.window
     streaming.SetDataLength(par.len)
 
@@ -82,18 +82,18 @@ def main(param):
     clustering.register(savetrigger)
     WDF.register(clustering)
     ###Start detection loop
-    print("Starting detection loop")
+    logging.info("Starting detection loop")
     while data.GetStart() < par.gpsEnd:
         streaming.GetData(data)
         ds.Process(data, data_ds)
         whiten.Process(data_ds, dataw)
         WDF.SetData(dataw)
         WDF.Process()
-    print('Program terminated')
+    logging.info('Program terminated')
     par.dump(par.outdir + "fileParametersUsed.json")
     elapsed_time = time.time() - start_time
     timeslice=par.gpsEnd-par.gpsStart
-    print('analyzed %s seconds in %s seconds' % (timeslice,elapsed_time))
+    logging.info('analyzed %s seconds in %s seconds' % (timeslice,elapsed_time))
 
 if __name__ == '__main__':  # pragma: no cover
     main()

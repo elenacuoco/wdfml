@@ -20,7 +20,7 @@ class DefineSegments(Observer):
 ### write on disk in ordered way
     def update(self,frame_t,ifo,bitmask_ifo,DQ_channel_rate_ifo,bitmask_list):
         states=map(lambda x:int(float(x.strip())) & bitmask_ifo,bitmask_list.split("\n"))
-        print("states=%s" % (repr(states)))
+        logging.info("states=%s" % (repr(states)))
         s = self.segmentslist
         rate = dq_channel_rate_ifo
         nsec = len(states) / rate

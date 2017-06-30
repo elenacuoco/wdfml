@@ -14,15 +14,15 @@ class array2SeqView(object):
         try:
             self.start = float(start)
         except ValueError:
-            print("starting time not defined")
+            logging.info("starting time not defined")
         try:
             self.sampling = float(sampling)
         except ValueError:
-            print("sampling not defined")
+            logging.info("sampling not defined")
         try:
             self.N = N
         except ValueError:
-            print("lenght not defined")
+            logging.info("lenght not defined")
         self.SV=SV(self.start,1.0/self.sampling,self.N)
 
 

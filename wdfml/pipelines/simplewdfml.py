@@ -22,12 +22,12 @@ def main ( ):
     logging.info("read Parameters")
     par = Parameters()
     par.load("fileParameters.json")
-    # print(par.__dict__)
+    # logging.info(par.__dict__)
     # Parameter for sequence of data
     gpsE = float(par.gpsStart) + 10.0
     Learn = SV()
     Learn_DS = SV()
-    # print(par.sampling, par.resampling)
+    # logging.info(par.sampling, par.resampling)
 
     # parameter for whitening and its estimation parameters
     whiten = Whitening(par.ARorder)
@@ -66,11 +66,11 @@ def main ( ):
     ### WDF process
     # sigma for the noise
     par.sigma = whiten.GetSigma()
-    print('Estimated sigma= %s' % par.sigma)
+    logging.info('Estimated sigma= %s' % par.sigma)
     par.Ncoeff = par.window
 
     ###Start detection loop
-    print("Starting detection loop")
+    logging.info("Starting detection loop")
 
     streaming.SetDataLength(par.len)
     startT = data.GetStart()
@@ -96,8 +96,8 @@ def main ( ):
             observable.update_observers(ev)
             cev=clustering.CEV
             observableO.update_observers(cev)
-    print(classifier.classified)
-    print('Program terminated')
+    logging.info(classifier.classified)
+    logging.info('Program terminated')
     par.dump("fileParametersUsed.json")
 
 
@@ -105,4 +105,4 @@ if __name__ == '__main__':  # pragma: no cover
     start_time = time.time()
     main()
     elapsed_time = time.time() - start_time
-    print('elapsed_time= %s' % elapsed_time)
+    logging.info('elapsed_time= %s' % elapsed_time)

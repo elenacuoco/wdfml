@@ -13,19 +13,19 @@ class Segment(object):
         try:
             self.minSlice = float(minSlice)
         except ValueError:
-            print("Minimun slice not defined")
+            logging.info("Minimun slice not defined")
         try:
             self.start = float(start)
         except ValueError:
-            print("Starting time not defined")
+            logging.info("Starting time not defined")
         try:
             self.end = float(end)
         except ValueError:
-            print("Ending time not defined")
+            logging.info("Ending time not defined")
         try:
             (self.end - self.start) > 0
         except ValueError:
-            print("segment lenght is <=0")
+            logging.info("segment lenght is <=0")
 
         self.segment = [self.start, self.end]
 

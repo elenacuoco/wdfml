@@ -21,7 +21,7 @@ def main ( ):
     triggers = triggers[triggers.SNRMax >= 10]
     new = triggers.drop(list_todrop, axis=1)
     X = np.asarray(new.astype(np.float))
-    print(X.shape)
+    logging.info(X.shape)
     pca_comp = 10
     spectral_emb = 2
     n_neighbors = 15
@@ -33,4 +33,4 @@ if __name__ == '__main__':  # pragma: no cover
     start_time = time.time()
     main()
     elapsed_time = time.time() - start_time
-    print('elapsed_time= %s' % elapsed_time)
+    logging.info('elapsed_time= %s' % elapsed_time)

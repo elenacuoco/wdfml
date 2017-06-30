@@ -23,7 +23,6 @@ class wdfWorker(object):
     def __init__ ( self, parameters,fullPrint=1):
         self.par = Parameters()
         self.par.copy(parameters)
-        #self.par.deltaT = 1.5 * (parameters.window - parameters.overlap) / parameters.resampling
         self.par.Ncoeff = parameters.window
         self.learnlen = 1.5 * float(parameters.learn)
         self.fullPrint=fullPrint

@@ -22,6 +22,14 @@ logger = logging.getLogger(__name__)
 
 def estimate_freq(sig,fs):
     freq, psd = signal.periodogram(sig, fs)
+    threshold = 0.1* max(abs(psd))
+    mask = abs(psd) > threshold
+    peaks = freq[mask]
+    freq =np.max(peaks)
+    return freq
+
+def estimate_freq_mean(sig,fs):
+    freq, psd = signal.periodogram(sig, fs)
     threshold = 0.2* max(abs(psd))
     mask = abs(psd) > threshold
     peaks = freq[mask]

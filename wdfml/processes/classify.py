@@ -50,8 +50,8 @@ def gaussian_mixture ( matrix, upper_bound ):
     :type matrix: numpy matrix
     '''
     if (len(matrix) < upper_bound + 1):
-        print("\n\tWARNING: Not enough samples (less than the minimum %i) to run GaussianMixture." % (upper_bound))
-        print("\t Only one cluster is returned.\n")
+        logging.info("\n\tWARNING: Not enough samples (less than the minimum %i) to run GaussianMixture." % (upper_bound))
+        logging.info("\t Only one cluster is returned.\n")
         return [0] * len(matrix)
 
     j = 0

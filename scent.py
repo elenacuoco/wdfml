@@ -62,8 +62,8 @@ def run(command, title, count, retry):
         if not run(*args):
             return False
 
-    print("")
-    print("$ %s" % ' '.join(command))
+    logging.info("")
+    logging.info("$ %s" % ' '.join(command))
     failure = subprocess.call(command)
 
     if failure:

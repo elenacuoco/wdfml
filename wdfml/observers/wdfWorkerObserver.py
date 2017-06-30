@@ -31,6 +31,7 @@ class wdfWorkerObserver(Observer, Observable):
         self.par.copy(parameters)
         self.wdfworker = wdfWorker(self.par, fullPrint)
 
+
     def wait_completion ( self ):
         """ Wait for completion of all the tasks in the queue """
         self.pool.close()
@@ -38,8 +39,11 @@ class wdfWorkerObserver(Observer, Observable):
 
     def update ( self, segment,last ):
         try:
-            self.pool.map_async(self.wdfworker.segmentProcess, segment)
-            if last==1:
+            if last:
+                logging.info("Last job launched")
+                self.pool.map(self.wdfworker.segmentProcess, segment)
                 self.wait_completion()
+            else:
+                self.pool.apply_async(self.wdfworker.segmentProcess, segment)
         except KeyboardInterrupt:
             self.pool.terminate()
