@@ -17,24 +17,39 @@ from pytsa.tsa import SeqView_double_t as SV
 from wdfml.structures.array2SeqView import *
 from scipy import signal
 import numpy as np
+from numpy.fft import fft
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def estimate_freq(sig,fs):
-    freq, psd = signal.periodogram(sig, fs)
-    threshold = 0.1* max(abs(psd))
+
+def estimate_freq ( sig, fs ):
+    freq, psd = signal.welch(sig, fs)
+    threshold = 0.8 * max(abs(psd))
     mask = abs(psd) > threshold
     peaks = freq[mask]
-    freq =np.max(peaks)
+    freq = np.max(peaks)
     return freq
 
-def estimate_freq_mean(sig,fs):
+
+def wave_freq ( sig, fs ):
+    domain = float(len(sig))
+    assert domain > 0
+    index = np.argmax(abs(fft(sig)[1:])) + 2
+    if index > len(sig) / 2:
+        index = len(sig) - index + 2
+    freq = (fs / domain) * (index - 1)
+    return freq
+
+
+def estimate_freq_mean ( sig, fs ):
     freq, psd = signal.periodogram(sig, fs)
-    threshold = 0.2* max(abs(psd))
+    threshold = 0.5 * max(abs(psd))
     mask = abs(psd) > threshold
     peaks = freq[mask]
-    freqmean =np.mean(peaks)
+    freqmean = np.mean(peaks)
     return freqmean
+
 
 class ParameterEstimation(Observer, Observable):
     def __init__ ( self, parameters ):
@@ -59,18 +74,18 @@ class ParameterEstimation(Observer, Observable):
         data = data.Fill(t0, coeff)
         dataIdct = array2SeqView(t0, self.sampling, self.Ncoeff)
         dataIdct = dataIdct.Fill(t0, coeff)
-        if event.mWave!='DCT':
+        if event.mWave != 'DCT':
             wt = getattr(WaveletTransform, wave)
             WT = WaveletTransform(self.Ncoeff, wt)
             WT.Inverse(data)
             for i in range(self.Ncoeff):
                 Icoeff[i] = data.GetY(0, i)
         else:
-            idct=IDCT(self.Ncoeff)
-            idct(data,dataIdct)
+            idct = IDCT(self.Ncoeff)
+            idct(data, dataIdct)
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
-        freq =estimate_freq(Icoeff, self.sampling)
+        freq = estimate_freq(Icoeff, self.sampling)
         snr = event.mSNR
         eventParameters = eventPE(t0, snr, freq, wave, coeff, Icoeff)
         self.update_observers(eventParameters)

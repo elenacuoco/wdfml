@@ -26,6 +26,7 @@ class wdfWorker(object):
         self.par.Ncoeff = parameters.window
         self.learnlen = 1.5 * float(parameters.learn)
         self.fullPrint=fullPrint
+
     def segmentProcess ( self, segment ):
         gpsStart = segment[0]
         gpsEnd = segment[1]
