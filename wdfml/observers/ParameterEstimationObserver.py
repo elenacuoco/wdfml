@@ -6,18 +6,16 @@ This class implement the clustering of triggers found by wdf pipeline
 """
 
 import logging
-
 from pytsa.tsa import *
-
-from wdfml.observers.observer import Observer
 from wdfml.observers.observable import Observable
+from wdfml.observers.observer import Observer
 from wdfml.structures.eventPE import *
-from pytsa.tsa import *
-from pytsa.tsa import SeqView_double_t as SV
 from wdfml.structures.array2SeqView import *
 from scipy import signal
 import numpy as np
 from numpy.fft import fft
+from heapq import nlargest
+from collections import defaultdict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def estimate_freq ( sig, fs ):
     freq, psd = signal.welch(sig, fs)
-    threshold = 0.8 * max(abs(psd))
+    threshold = 0.5 * max(abs(psd))
     mask = abs(psd) > threshold
     peaks = freq[mask]
     freq = np.max(peaks)
@@ -61,6 +59,9 @@ class ParameterEstimation(Observer, Observable):
         self.sampling = parameters.resampling
         self.sigma = parameters.sigma
         self.Ncoeff = parameters.Ncoeff
+        self.scale = int(np.log2(parameters.Ncoeff))
+        self.sigma = parameters.sigma
+        self.snr = parameters.threshold
 
     def update ( self, event ):
         wave = event.mWave
@@ -70,6 +71,40 @@ class ParameterEstimation(Observer, Observable):
         for i in range(self.Ncoeff):
             coeff[i] = event.GetCoeff(i)
 
+        #### here we reconstruct really the event in the wavelet plane
+
+        new = np.zeros((int(self.scale), int(2 ** ((self.scale) - 1))))
+        dnew = defaultdict(list)
+
+        for j in range(int(self.scale)):
+            for k in range(int(2 ** (j - 1))):
+                new[j, k] = coeff[j + k]
+                dnew[new[j, k]].append((j, k))
+
+        for value, positions in nlargest(1, dnew.items(), key=lambda item: item[0]):
+            index0 = positions[0][0] + positions[0][1]
+            scale0 = positions[0][0]
+            value0 = value
+            maxvalue = (scale0, index0, value0)
+
+        indicesnew = []
+        valuesnew = []
+        for value, positions in nlargest(self.Ncoeff, dnew.items(), key=lambda item: item[0]):
+            index = positions[0][0] + positions[0][1]
+            if np.abs(index - index0) < 16:
+                indicesnew.append(index)
+                valuesnew.append(value)
+                index0 = index
+
+        timeDetailnew = maxvalue[1]/ self.sampling
+        timeDuration = (np.max(indicesnew) - np.min(indicesnew)) / self.sampling
+        snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
+
+        for i in range(self.Ncoeff):
+            if i not in indicesnew:
+                coeff[i] = 0.0
+
+        tnew = t0 + timeDetailnew
         data = array2SeqView(t0, self.sampling, self.Ncoeff)
         data = data.Fill(t0, coeff)
         dataIdct = array2SeqView(t0, self.sampling, self.Ncoeff)
@@ -85,7 +120,10 @@ class ParameterEstimation(Observer, Observable):
             idct(data, dataIdct)
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
-        freq = estimate_freq(Icoeff, self.sampling)
-        snr = event.mSNR
-        eventParameters = eventPE(t0, snr, freq, wave, coeff, Icoeff)
-        self.update_observers(eventParameters)
+
+        snr = snrDetailnew / (np.sqrt(2.0) * self.sigma)
+        if snr >= self.snr:
+            freq = wave_freq(Icoeff, self.sampling)
+            # snr = event.mSNR
+            eventParameters = eventPE(tnew, snr, freq, timeDuration, wave, coeff, Icoeff)
+            self.update_observers(eventParameters)

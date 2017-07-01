@@ -12,7 +12,7 @@ from wdfml.config.parameters import *
 from wdfml.observers.ClusteringObserver import Clustering
 from wdfml.observers.PrintFilePEObserver import *
 from wdfml.observers.ParameterEstimationObserver import *
-from wdfml.observers.ClusteredPrintFileObserver import *
+from wdfml.observers.SingleEventPrintFileObserver import  *
 from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
@@ -65,7 +65,7 @@ class wdfWorker(object):
             whiten.ParametersSave(self.par.ARfile, self.par.LVfile)
             del Learn, ds, strLearn, Learn_DS
         # sigma for the noise
-        self.par.sigma = 2.0 * whiten.GetSigma()
+        self.par.sigma = whiten.GetSigma()
         logging.info('Estimated sigma= %s' % self.par.sigma)
         ## update the self.parameters to be saved in local json file
         self.par.ID = ID
@@ -91,21 +91,19 @@ class wdfWorker(object):
             whiten.Process(data_ds, dataw)
         ### WDF process
         WDF = wdf(self.par, WaveletThreshold.dohonojohnston)
-        # WDF=wdf(self.par)
+        #WDF=wdf(self.par)
         ## register obesevers to WDF process
 
-        clustering = Clustering(self.par)
+
         # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
-        savetrigger = PrintClusteredTriggers(self.par, self.fullPrint)
+        savetrigger = SingleEventPrintTriggers(self.par, self.fullPrint)
         parameterestimation = ParameterEstimation(self.par)
-        parameterestimation.register(clustering)
-        clustering.register(savetrigger)
+        parameterestimation.register(savetrigger)
         WDF.register(parameterestimation)
         filejson = 'parametersUsed.json'
         self.par.dump(self.par.dir + filejson)
         ###Start detection loop
         logging.info("Starting detection loop")
-
         while data.GetStart() < gpsEnd:
             streaming.GetData(data)
             ds.Process(data, data_ds)

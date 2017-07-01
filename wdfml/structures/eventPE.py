@@ -23,34 +23,35 @@ class OrderedMeta(type):
 
 
 class eventPE(object):
-    def __init__ ( self, gps, snr, freq, wave, coeff, Icoeff ):
+    def __init__ ( self, gps, snr, freq, duration, wave, coeff, Icoeff ):
         self.gps = gps
         self.snr = snr
         self.freq = freq
+        self.duration = duration
         self.wave = wave
-        self.wt = np.zeros(len(coeff))
-        self.rw = np.zeros(len(Icoeff))
+        self.Ncoeff = len(coeff)
         for i in range(len(coeff)):
-            self.wt[i] = coeff[i]
+            setattr(self, "wt" + str(i), coeff[i])
         for i in range(len(Icoeff)):
-            self.rw[i] = Icoeff[i]
+            setattr(self, "rw" + str(i), Icoeff[i])
 
-    def update ( self, gps, snr, freq, wave, coeff, Icoeff ):
+    def update ( self, gps, snr, freq, duration, wave, coeff, Icoeff ):
         self.gps = gps
         self.snr = snr
         self.freq = freq
+        self.duration = duration
         self.wave = wave
         for i in range(len(coeff)):
-            self.wt[i] = coeff[i]
+            setattr(self, "wt" + str(i), coeff[i])
         for i in range(len(Icoeff)):
-            self.rw[i] = Icoeff[i]
+            setattr(self, "rw" + str(i), Icoeff[i])
 
     def evCopy ( self, ev ):
         self.gps = ev.gps
         self.snr = ev.snr
         self.freq = ev.freq
+        self.duration = ev.duration
         self.wave = ev.wave
-        for i in range(len(ev.wt)):
-            self.wt[i] = ev.wt[i]
-        for i in range(len(ev.rw)):
-            self.rw[i] = ev.rw[i]
+        for i in range(self.Ncoeff):
+            setattr(self, "wt" + str(i),  setattr(ev, "wt" + str(i)))
+            setattr(self, "rw" + str(i) ,  setattr(ev, "rw" + str(i)))
