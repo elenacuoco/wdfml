@@ -32,7 +32,7 @@ class wdfWorker(object):
         gpsEnd = segment[1]
         logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
         start_time = time.time()
-        ID = str(self.par.run) + "_" + str(self.par.channel) + '_' + str(int(gpsStart))
+        ID = str(self.par.channel) + '_' + str(int(gpsStart))
         dir_chunk = self.par.outdir + ID + '/'
         # create the output dir
         if not os.path.exists(dir_chunk):
