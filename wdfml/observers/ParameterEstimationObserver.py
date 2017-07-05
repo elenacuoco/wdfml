@@ -124,6 +124,6 @@ class ParameterEstimation(Observer, Observable):
 
         snrMax = snrDetailnew / (np.sqrt(2.0) * self.sigma)
         snr = event.mSNR
-        freq = estimate_freq_mean(Icoeff, self.sampling)
+        freq = wave_freq(Icoeff, self.sampling)
         eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
         self.update_observers(eventParameters)
