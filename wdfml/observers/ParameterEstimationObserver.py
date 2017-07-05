@@ -16,13 +16,15 @@ import numpy as np
 from numpy.fft import fft
 from heapq import nlargest
 from collections import defaultdict
+from scipy import signal, integrate
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def estimate_freq_max ( sig, fs ):
-    freq, psd = signal.welch(sig, fs)
+def estimate_freq_max(sig, fs):
+    freq, psd = signal.welch(sig, fs, window='hanning', nperseg=len(sig), noverlap=None, nfft=None, detrend=False,
+                             return_onesided=True, scaling='density', axis=-1)
     threshold = 0.5 * max(abs(psd))
     mask = abs(psd) > threshold
     peaks = freq[mask]
@@ -30,7 +32,7 @@ def estimate_freq_max ( sig, fs ):
     return freq
 
 
-def wave_freq ( sig, fs ):
+def wave_freq(sig, fs):
     domain = float(len(sig))
     assert domain > 0
     index = np.argmax(abs(fft(sig)[1:])) + 2
@@ -40,17 +42,19 @@ def wave_freq ( sig, fs ):
     return freq
 
 
-def estimate_freq_mean ( sig, fs ):
-    freq, psd = signal.periodogram(sig, fs)
-    threshold = 0.5 * max(abs(psd))
-    mask = abs(psd) > threshold
-    peaks = freq[mask]
-    freqmean = np.mean(peaks)
-    return freqmean
+def estimate_freq_mean(sig, fs):
+    nperseg = np.ceil(len(sig) / 2)
+    f, P = signal.welch(sig, fs, window='hanning', nperseg=nperseg, noverlap=None, nfft=len(sig), detrend=False, \
+                        return_onesided=True, scaling='density', axis=-1)
+    Area = integrate.cumtrapz(P, f, initial=0)
+    Ptotal = Area[-1]
+    mpf = integrate.trapz(f * P, f) / Ptotal  # mean power frequency
+    fmax = f[np.argmax(P)]
+    return mpf, fmax
 
 
 class ParameterEstimation(Observer, Observable):
-    def __init__ ( self, parameters ):
+    def __init__(self, parameters):
         """
         :type parameters: class Parameters object
         """
@@ -63,7 +67,7 @@ class ParameterEstimation(Observer, Observable):
         self.sigma = parameters.sigma
         self.snr = parameters.threshold
 
-    def update ( self, event ):
+    def update(self, event):
         wave = event.mWave
         t0 = event.mTime
         coeff = np.zeros(self.Ncoeff)
@@ -91,13 +95,12 @@ class ParameterEstimation(Observer, Observable):
         valuesnew = []
         for value, positions in nlargest(self.Ncoeff, dnew.items(), key=lambda item: item[0]):
             index = positions[0][0] + positions[0][1]
-            if np.abs(index - index0) < 8:
+            if np.abs(index - index0) < 5:
                 indicesnew.append(index)
                 valuesnew.append(value)
                 index0 = index
 
         timeDetailnew = maxvalue[1] / self.sampling
-        freqatpeak = maxvalue[1] * self.sampling / self.Ncoeff
         timeDuration = (np.max(indicesnew) - np.min(indicesnew)) / self.sampling
         snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
 
@@ -124,7 +127,9 @@ class ParameterEstimation(Observer, Observable):
 
         snrMax = snrDetailnew / (np.sqrt(2.0) * self.sigma)
         snr = event.mSNR
-        if snrMax>=self.snr:
-            freq = wave_freq(Icoeff, self.sampling)
+        if snrMax >= self.snr:
+            # freq = wave_freq(Icoeff, self.sampling)
+            # freqatpeak = estimate_freq_max(Icoeff, self.sampling)
+            freq, freqatpeak = estimate_freq_mean(Icoeff, self.sampling)
             eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
             self.update_observers(eventParameters)
