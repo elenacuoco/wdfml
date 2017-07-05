@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def estimate_freq ( sig, fs ):
+def estimate_freq_max ( sig, fs ):
     freq, psd = signal.welch(sig, fs)
     threshold = 0.5 * max(abs(psd))
     mask = abs(psd) > threshold
@@ -96,7 +96,8 @@ class ParameterEstimation(Observer, Observable):
                 valuesnew.append(value)
                 index0 = index
 
-        timeDetailnew = maxvalue[1]/ self.sampling
+        timeDetailnew = maxvalue[1] / self.sampling
+        freqatpeak = maxvalue[1] * self.sampling / self.Ncoeff
         timeDuration = (np.max(indicesnew) - np.min(indicesnew)) / self.sampling
         snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
 
@@ -121,9 +122,8 @@ class ParameterEstimation(Observer, Observable):
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
-        snr = snrDetailnew / (np.sqrt(2.0) * self.sigma)
-        if snr >= self.snr:
-            freq = wave_freq(Icoeff, self.sampling)
-            # snr = event.mSNR
-            eventParameters = eventPE(tnew, snr, freq, timeDuration, wave, coeff, Icoeff)
-            self.update_observers(eventParameters)
+        snrMax = snrDetailnew / (np.sqrt(2.0) * self.sigma)
+        snr = event.mSNR
+        freq = estimate_freq_mean(Icoeff, self.sampling)
+        eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
+        self.update_observers(eventParameters)

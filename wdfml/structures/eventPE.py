@@ -23,10 +23,12 @@ class OrderedMeta(type):
 
 
 class eventPE(object):
-    def __init__ ( self, gps, snr, freq, duration, wave, coeff, Icoeff ):
+    def __init__ ( self, gps, snr, snrMax, freq, freqMax, duration, wave, coeff, Icoeff ):
         self.gps = gps
         self.snr = snr
+        self.snrMax = snrMax
         self.freq = freq
+        self.freqMax = freqMax
         self.duration = duration
         self.wave = wave
         self.Ncoeff = len(coeff)
@@ -35,10 +37,12 @@ class eventPE(object):
         for i in range(len(Icoeff)):
             setattr(self, "rw" + str(i), Icoeff[i])
 
-    def update ( self, gps, snr, freq, duration, wave, coeff, Icoeff ):
+    def update ( self, gps, snr, snrMax, freq, freqMax, duration, wave, coeff, Icoeff ):
         self.gps = gps
         self.snr = snr
+        self.snrMax = snrMax
         self.freq = freq
+        self.freqMax = freqMax
         self.duration = duration
         self.wave = wave
         for i in range(len(coeff)):
@@ -49,7 +53,9 @@ class eventPE(object):
     def evCopy ( self, ev ):
         self.gps = ev.gps
         self.snr = ev.snr
+        self.snrMax = ev.snrMax
         self.freq = ev.freq
+        self.freqMax = ev.freqMax
         self.duration = ev.duration
         self.wave = ev.wave
         for i in range(self.Ncoeff):

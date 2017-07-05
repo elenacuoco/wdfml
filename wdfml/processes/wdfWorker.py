@@ -93,8 +93,6 @@ class wdfWorker(object):
         WDF = wdf(self.par, WaveletThreshold.dohonojohnston)
         #WDF=wdf(self.par)
         ## register obesevers to WDF process
-
-
         # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
         savetrigger = SingleEventPrintTriggers(self.par, self.fullPrint)
         parameterestimation = ParameterEstimation(self.par)

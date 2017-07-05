@@ -23,8 +23,8 @@ class SingleEventPrintTriggers(Observer):
             except OSError:
                 pass
         self.fullPrint = fullPrint
-        self.headers = ['gps', 'snr', 'freq', 'duration', 'wave']
-        self.headersFull = ['gps', 'snr', 'freq', 'duration', 'wave']
+        self.headers = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave']
+        self.headersFull = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave']
         for i in range(par.Ncoeff):
             self.headers.append("wt" + str(i))
             self.headersFull.append("wt" + str(i))
@@ -40,9 +40,9 @@ class SingleEventPrintTriggers(Observer):
         self.ev['ID'] = self.id
         if self.fullPrint == 0:
             with open(self.filesave, 'a') as csvfile:
-                headers = ['gps', 'snr', 'freq', 'duration', 'wave']
+                headers = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave']
                 toprint = dict((k, self.ev[k]) for k in
-                               ('gps', 'snr', 'freq', 'duration', 'wave'))
+                               ('gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave'))
                 writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=headers)
                 if not self.file_exists:
                     writer.writeheader()

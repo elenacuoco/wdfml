@@ -13,7 +13,7 @@ import os.path
 
 
 class PrintPETriggers(Observer):
-    def __init__ ( self, par, fullPrint=0):
+    def __init__ ( self, par, fullPrint=0 ):
         self.filesave = par.dir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
             par.chan, int(par.gps), par.ARorder, par.window, par.overlap, int(par.threshold))
         self.id = 0
@@ -22,12 +22,12 @@ class PrintPETriggers(Observer):
         except OSError:
             pass
         self.fullPrint = fullPrint
-        self.headers=['gps','snr','freq','wave']
-        self.headersFull= ['gps', 'snr', 'freq', 'wave']
+        self.headers = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'wave']
+        self.headersFull = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'wave']
         for i in range(par.Ncoeff):
             self.headers.append("wt" + str(i))
             self.headersFull.append("wt" + str(i))
-        for i in range( par.Ncoeff):
+        for i in range(par.Ncoeff):
             self.headersFull.append("rw" + str(i))
 
     ### write on disk in ordered way
@@ -38,8 +38,8 @@ class PrintPETriggers(Observer):
         self.ev['ID'] = self.id
         if self.fullPrint == 0:
             with open(self.filesave, 'a') as csvfile:
-                headers = ['gps','snr','freq','wave']
-                toprint=dict((k, self.ev[k]) for k in ('gps','snr','freq','wave'))
+                headers = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'wave']
+                toprint = dict((k, self.ev[k]) for k in ('gps', 'snr', 'snrMax', 'freq', 'freqMax', 'wave'))
                 writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=headers)
                 if not self.file_exists:
                     writer.writeheader()
