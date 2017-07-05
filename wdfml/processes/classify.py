@@ -6,10 +6,12 @@ import sklearn.mixture  as mix
 from sklearn.pipeline import Pipeline
 import logging
 import matplotlib.pyplot as plt
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def GMMpipeline( matrix, upper_bound, pca_components, spectral_emb_coeff, n_neighbors ):
+
+def GMMpipeline ( matrix, upper_bound, pca_components, spectral_emb_coeff, n_neighbors ):
     '''
     This function clusters the input matrix using the GaussianMixture algorithm (gaussian mixture model)
     The number of clusters is found by running the algorithm for n_components = 2 to upper_bound
@@ -22,8 +24,8 @@ def GMMpipeline( matrix, upper_bound, pca_components, spectral_emb_coeff, n_neig
     :type matrix: numpy matrix
     '''
     if (len(matrix) < upper_bound + 1):
-        print ("\n\tWARNING: Not enough samples (less than the minimum %i) to run GaussianMixture." % (upper_bound))
-        print ("\t Only one cluster is returned.\n")
+        print("\n\tWARNING: Not enough samples (less than the minimum %i) to run GaussianMixture." % (upper_bound))
+        print("\t Only one cluster is returned.\n")
         return [0] * len(matrix)
     pca = decomposition.PCA(n_components=pca_components, whiten=True)
     Embedding = manifold.SpectralEmbedding(n_components=spectral_emb_coeff,
@@ -31,11 +33,12 @@ def GMMpipeline( matrix, upper_bound, pca_components, spectral_emb_coeff, n_neig
                                            gamma=None, random_state=0,
                                            n_neighbors=n_neighbors)
     GaussianMixture = mix.GaussianMixture(n_components=upper_bound, covariance_type='full', \
-                                          random_state=1, max_iter=1000,n_init=1)
+                                          random_state=1, max_iter=1000, n_init=1)
 
-    clf=Pipeline([('pca',pca),('gmm',GaussianMixture)])
+    clf = Pipeline([('pca', pca), ('gmm', GaussianMixture)])
     clf.fit(matrix)
     return clf
+
 
 def gaussian_mixture ( matrix, upper_bound ):
     '''
@@ -50,7 +53,8 @@ def gaussian_mixture ( matrix, upper_bound ):
     :type matrix: numpy matrix
     '''
     if (len(matrix) < upper_bound + 1):
-        logging.info("\n\tWARNING: Not enough samples (less than the minimum %i) to run GaussianMixture." % (upper_bound))
+        logging.info(
+            "\n\tWARNING: Not enough samples (less than the minimum %i) to run GaussianMixture." % (upper_bound))
         logging.info("\t Only one cluster is returned.\n")
         return [0] * len(matrix)
 
@@ -275,18 +279,13 @@ class WDFMLClassify(object):
         return self.labels
 
     def PlotClustering ( self ):
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=(14, 10))
         plt.xlim(min(self.X_red[:, 0]) - 0.1, max(self.X_red[:, 0]) + 0.1)
         plt.ylim(min(self.X_red[:, 1]) - 0.1, max(self.X_red[:, 1]) + 0.1)
 
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
-        plt.xlabel('Coeff1', fontsize=20)
-        plt.ylabel('Coeff2', fontsize=20)
+        plt.xlabel('1-dim coefficients', fontsize=14)
+        plt.ylabel('2-dim coefficients', fontsize=14)
         for i in range(self.X_red.shape[0]):
             plt.text(self.X_red[i, 0], self.X_red[i, 1], str(self.labels[i]),
-                     color=plt.cm.spectral(self.labels[i] / 5.0),
-                     fontdict={'weight': 'bold', 'size': 12})
-
-
-
+                     color=plt.cm.spectral(self.labels[i] / 10.0),
+                                           fontdict={'weight': 'bold', 'size': 14})

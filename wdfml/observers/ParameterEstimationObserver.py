@@ -91,7 +91,7 @@ class ParameterEstimation(Observer, Observable):
         valuesnew = []
         for value, positions in nlargest(self.Ncoeff, dnew.items(), key=lambda item: item[0]):
             index = positions[0][0] + positions[0][1]
-            if np.abs(index - index0) < 16:
+            if np.abs(index - index0) < 8:
                 indicesnew.append(index)
                 valuesnew.append(value)
                 index0 = index
@@ -124,6 +124,7 @@ class ParameterEstimation(Observer, Observable):
 
         snrMax = snrDetailnew / (np.sqrt(2.0) * self.sigma)
         snr = event.mSNR
-        freq = wave_freq(Icoeff, self.sampling)
-        eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
-        self.update_observers(eventParameters)
+        if snrMax>=self.snr:
+            freq = wave_freq(Icoeff, self.sampling)
+            eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
+            self.update_observers(eventParameters)
