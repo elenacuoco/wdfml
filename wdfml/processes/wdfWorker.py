@@ -27,7 +27,7 @@ class wdfWorker(object):
         self.learnlen = 1.5 * float(parameters.learn)
         self.fullPrint=fullPrint
 
-    def segmentProcess ( self, segment ):
+    def segmentProcess ( self, segment, wavThresh= WaveletThreshold.dohonojohnston):
         gpsStart = segment[0]
         gpsEnd = segment[1]
         logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
@@ -90,7 +90,7 @@ class wdfWorker(object):
             ds.Process(data, data_ds)
             whiten.Process(data_ds, dataw)
         ### WDF process
-        WDF = wdf(self.par, WaveletThreshold.dohonojohnston)
+        WDF = wdf(self.par,wavThresh)
         #WDF=wdf(self.par)
         ## register obesevers to WDF process
         # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
