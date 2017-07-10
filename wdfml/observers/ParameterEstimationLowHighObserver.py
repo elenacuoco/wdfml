@@ -6,26 +6,27 @@ This class implement the clustering of triggers found by wdf pipeline
 """
 
 import logging
+from collections import defaultdict
+from heapq import nlargest
 
+import numpy as np
+from numpy.fft import fft
 from pytsa.tsa import *
 from pytsa.tsa import *
+from scipy import signal, integrate
 
 from wdfml.observers.observable import Observable
 from wdfml.observers.observer import Observer
-from wdfml.structures.eventPE import *
 from wdfml.structures.array2SeqView import *
-from scipy import signal
-import numpy as np
-from numpy.fft import fft
-from heapq import nlargest
-from collections import defaultdict
+from wdfml.structures.eventPE import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def estimate_freq ( sig, fs ):
-    freq, psd = signal.welch(sig, fs)
+def estimate_freq_max(sig, fs):
+    freq, psd = signal.welch(sig, fs, window='hanning', nperseg=len(sig), noverlap=None, nfft=None, detrend=False,
+                             return_onesided=True, scaling='density', axis=-1)
     threshold = 0.5 * max(abs(psd))
     mask = abs(psd) > threshold
     peaks = freq[mask]
@@ -33,7 +34,7 @@ def estimate_freq ( sig, fs ):
     return freq
 
 
-def wave_freq ( sig, fs ):
+def wave_freq(sig, fs):
     domain = float(len(sig))
     assert domain > 0
     index = np.argmax(abs(fft(sig)[1:])) + 2
@@ -43,14 +44,15 @@ def wave_freq ( sig, fs ):
     return freq
 
 
-def estimate_freq_mean ( sig, fs ):
-    freq, psd = signal.periodogram(sig, fs)
-    threshold = 0.5 * max(abs(psd))
-    mask = abs(psd) > threshold
-    peaks = freq[mask]
-    freqmean = np.mean(peaks)
-    return freqmean
-
+def estimate_freq_mean(sig, fs):
+    nperseg = np.ceil(len(sig) / 2)
+    f, P = signal.welch(sig, fs, window='hanning', nperseg=nperseg, noverlap=None, nfft=len(sig), detrend=False, \
+                        return_onesided=True, scaling='density', axis=-1)
+    Area = integrate.cumtrapz(P, f, initial=0)
+    Ptotal = Area[-1]
+    mpf = integrate.trapz(f * P, f) / Ptotal  # mean power frequency
+    fmax = f[np.argmax(P)]
+    return mpf, fmax
 
 class ParameterEstimation(Observer, Observable):
     def __init__ ( self, parameters ):
@@ -106,10 +108,10 @@ class ParameterEstimation(Observer, Observable):
                 indiceslow.append(index)
                 valueslow.append(value)
                 index0 = index
-
-        timeDetaillow = np.mean(indiceslow)
-        #        timeDuration = np.max(indices) - np.min(indices)
+        timeDetaillow = maxvalue[1] / self.sampling
+        timeDurationlow = (np.max(indiceslow) - np.min(indiceslow)) / self.sampling
         snrDetaillow = np.sqrt(np.sum([x * x for x in valueslow]))
+
 
         for value, positions in nlargest(1, dhigh.items(), key=lambda item: item[0]):
             index0 = positions[0][0] + positions[0][1]
@@ -126,9 +128,11 @@ class ParameterEstimation(Observer, Observable):
                 valueshigh.append(value)
                 index0 = index
 
-        timeDetailhigh = np.mean(indiceshigh)
-        #        timeDuration = np.max(indices) - np.min(indices)
+
+        timeDetailhigh = maxvalue[1] / self.sampling
+        timeDurationhigh = (np.max(indiceshigh) - np.min(indiceshigh)) / self.sampling
         snrDetailhigh = np.sqrt(np.sum([x * x for x in valueshigh]))
+
         coeffhigh=np.zeros(self.Ncoeff)
         coefflow = np.zeros(self.Ncoeff)
         for i in range(self.Ncoeff):
@@ -139,7 +143,7 @@ class ParameterEstimation(Observer, Observable):
             if i not in indiceslow:
                 coefflow[i] = 0.0
 
-        tlow =t0+ timeDetaillow / self.sampling
+        tlow =t0+ timeDetaillow
         data = array2SeqView(t0, self.sampling, self.Ncoeff)
         data = data.Fill(t0, coefflow)
         dataIdct = array2SeqView(t0, self.sampling, self.Ncoeff)
@@ -155,19 +159,21 @@ class ParameterEstimation(Observer, Observable):
             idct(data, dataIdct)
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
-
-        snr = snrDetaillow / (np.sqrt(2.0) * self.sigma)
-        if snr >= self.snr:
-            freq = wave_freq(Icoeff, self.sampling)
-            # snr = event.mSNR
-            eventParameters = eventPE(tlow, snr, freq, wave, coefflow, Icoeff)
+        snrMax = snrDetaillow / (np.sqrt(2.0) * self.sigma)
+        snr = event.mSNR
+        if snrMax >= self.snr:
+            # freq = wave_freq(Icoeff, self.sampling)
+            # freqatpeak = estimate_freq_max(Icoeff, self.sampling)
+            freq, freqatpeak = estimate_freq_mean(Icoeff, self.sampling)
+            eventParameters = eventPE(tlow, snr, snrMax, freq, freqatpeak, timeDurationlow, wave, coeff, Icoeff)
             self.update_observers(eventParameters)
+
 
         for i in range(self.Ncoeff):
             if i not in indiceshigh:
                 coeffhigh[i] = 0.0
 
-        thigh = t0 + timeDetailhigh / self.sampling
+        thigh = t0 + timeDetailhigh
         data = array2SeqView(t0, self.sampling, self.Ncoeff)
         data = data.Fill(t0, coeffhigh)
         dataIdct = array2SeqView(t0, self.sampling, self.Ncoeff)
@@ -184,9 +190,11 @@ class ParameterEstimation(Observer, Observable):
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
-        snr = snrDetailhigh / (np.sqrt(2.0) * self.sigma)
-        if snr >= self.snr:
-            freq = estimate_freq(Icoeff, self.sampling)
-            # snr = event.mSNR
-            eventParameters = eventPE(thigh, snr, freq, wave, coeffhigh, Icoeff)
+        snrMax = snrDetailhigh / (np.sqrt(2.0) * self.sigma)
+        snr = event.mSNR
+        if snrMax >= self.snr:
+            # freq = wave_freq(Icoeff, self.sampling)
+            # freqatpeak = estimate_freq_max(Icoeff, self.sampling)
+            freq, freqatpeak = estimate_freq_mean(Icoeff, self.sampling)
+            eventParameters = eventPE(thigh, snr, snrMax, freq, freqatpeak, timeDurationhigh, wave, coeff, Icoeff)
             self.update_observers(eventParameters)

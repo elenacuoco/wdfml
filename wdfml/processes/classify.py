@@ -248,6 +248,28 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
 
+    def PreprocessingPCATSNE ( self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True ):
+        """
+        :type MNE_coefficients: int
+        :type PCA_coefficients: int
+        :param MNE_coefficients: number of coefficnents for mns projection
+        :param PCA_coefficients: number of n_coefficients for PCA transform
+        :param N_neighbors: number of neighbors for embedding
+        """
+        self.MNE_coefficients = MNE_coefficients
+        self.PCA_coefficients = PCA_coefficients
+        self.N_neighbors = N_neighbors
+        self.pca = decomposition.PCA(n_components=self.PCA_coefficients, whiten=whiten)
+        # self.pca = decomposition.SparsePCA(n_components=self.PCA_coefficients, random_state=0)
+
+        self.Embedding = manifold.TSNE(n_components=2, perplexity=40.0, early_exaggeration=4.0,
+                    learning_rate=100.0, n_iter=1000, n_iter_without_progress=30, min_grad_norm=1e-07, \
+                    metric='euclidean', init='random', verbose=0, random_state=0, method='barnes_hut', angle=0.5)
+
+        self.X_pca = self.pca.fit_transform(self.Waves_Coefficients)
+        self.X_red = self.Embedding.fit_transform(self.X_pca)
+        return self.X_red
+
     def PreprocessingRBM ( self, components, MNE_coefficients, N_neighbors ):
         """
         :type MNE_coefficients: int
