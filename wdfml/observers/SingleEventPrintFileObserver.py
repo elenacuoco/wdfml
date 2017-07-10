@@ -14,7 +14,7 @@ import gzip
 
 class SingleEventPrintTriggers(Observer):
     def __init__ ( self, par, fullPrint=0 ):
-        self.filesave = par.dir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv.gz' % (
+        self.filesave = par.dir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
             par.chan, int(par.gps), par.ARorder, par.window, par.overlap, int(par.threshold))
         self.id = 0
         if os.path.isfile(self.filesave):
@@ -39,7 +39,7 @@ class SingleEventPrintTriggers(Observer):
         self.id += 1
         self.ev['ID'] = self.id
         if self.fullPrint == 0:
-            with gzip.open(self.filesave, 'a') as csvfile:
+            with open(self.filesave, 'a') as csvfile:
                 headers = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave']
                 toprint = dict((k, self.ev[k]) for k in
                                ('gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave'))
@@ -48,14 +48,14 @@ class SingleEventPrintTriggers(Observer):
                     writer.writeheader()
                 writer.writerow(toprint)
         if self.fullPrint == 1:
-            with gzip.open(self.filesave, 'a') as csvfile:
+            with open(self.filesave, 'a') as csvfile:
                 writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=self.headers)
                 toprint = dict((k, self.ev[k]) for k in self.headers)
                 if not self.file_exists:
                     writer.writeheader()
                 writer.writerow(toprint)
         if self.fullPrint == 2:
-            with gzip.open(self.filesave, 'a') as csvfile:
+            with open(self.filesave, 'a') as csvfile:
                 writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=self.headersFull)
                 toprint = dict((k, self.ev[k]) for k in self.headersFull)
                 if not self.file_exists:
