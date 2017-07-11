@@ -44,15 +44,16 @@ def wave_freq(sig, fs):
     return freq
 
 
-def estimate_freq_mean(sig, fs):
+def estimate_freq_mean ( sig, fs ):
     nperseg = np.ceil(len(sig) / 2)
     f, P = signal.welch(sig, fs, window='hanning', nperseg=nperseg, noverlap=None, nfft=len(sig), detrend=False, \
-                        return_onesided=True, scaling='density', axis=-1)
+                        return_onesided=True, scaling='spectrum', axis=-1)
     Area = integrate.cumtrapz(P, f, initial=0)
     Ptotal = Area[-1]
     mpf = integrate.trapz(f * P, f) / Ptotal  # mean power frequency
     fmax = f[np.argmax(P)]
     return mpf, fmax
+
 
 class ParameterEstimation(Observer, Observable):
     def __init__ ( self, parameters ):
@@ -84,12 +85,12 @@ class ParameterEstimation(Observer, Observable):
         dlow = defaultdict(list)
         dhigh = defaultdict(list)
 
-        for j in range(int(self.scale-3)):
+        for j in range(int(self.scale-np.ceil(self.scale/2))):
             for k in range(int(2 ** (j - 1))):
                 low[j, k] = coeff[j + k]
                 dlow[low[j, k]].append((j, k))
 
-        for j in range(int(self.scale-3), int(self.scale)):
+        for j in range(int(self.scale-np.ceil(self.scale/2)), int(self.scale)):
             for k in range(int(2 ** (j - 1))):
                 high[j, k] = coeff[j + k]
                 dhigh[high[j, k]].append((j, k))
@@ -102,9 +103,9 @@ class ParameterEstimation(Observer, Observable):
 
         indiceslow = []
         valueslow = []
-        for value, positions in nlargest(32, dlow.items(), key=lambda item: item[0]):
+        for value, positions in nlargest(self.Ncoeff, dlow.items(), key=lambda item: item[0]):
             index = positions[0][0] + positions[0][1]
-            if np.abs(index - index0) < 3:
+            if np.abs(index - index0)  < 12 :
                 indiceslow.append(index)
                 valueslow.append(value)
                 index0 = index
@@ -121,9 +122,9 @@ class ParameterEstimation(Observer, Observable):
 
         indiceshigh = []
         valueshigh = []
-        for value, positions in nlargest(32, dhigh.items(), key=lambda item: item[0]):
+        for value, positions in nlargest(self.Ncoeff, dhigh.items(), key=lambda item: item[0]):
             index = positions[0][0] + positions[0][1]
-            if np.abs(index - index0) < 3:
+            if np.abs(index - index0) < 12 :
                 indiceshigh.append(index)
                 valueshigh.append(value)
                 index0 = index

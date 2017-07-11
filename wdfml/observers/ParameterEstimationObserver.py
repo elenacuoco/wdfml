@@ -6,23 +6,24 @@ This class implement the clustering of triggers found by wdf pipeline
 """
 
 import logging
-from pytsa.tsa import *
-from wdfml.observers.observable import Observable
-from wdfml.observers.observer import Observer
-from wdfml.structures.eventPE import *
-from wdfml.structures.array2SeqView import *
-from scipy import signal
+from collections import defaultdict
+from heapq import nlargest
+
 import numpy as np
 from numpy.fft import fft
-from heapq import nlargest
-from collections import defaultdict
+from pytsa.tsa import *
 from scipy import signal, integrate
+
+from wdfml.observers.observable import Observable
+from wdfml.observers.observer import Observer
+from wdfml.structures.array2SeqView import *
+from wdfml.structures.eventPE import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def estimate_freq_max(sig, fs):
+def estimate_freq_max ( sig, fs ):
     freq, psd = signal.welch(sig, fs, window='hanning', nperseg=len(sig), noverlap=None, nfft=None, detrend=False,
                              return_onesided=True, scaling='density', axis=-1)
     threshold = 0.5 * max(abs(psd))
@@ -32,7 +33,7 @@ def estimate_freq_max(sig, fs):
     return freq
 
 
-def wave_freq(sig, fs):
+def wave_freq ( sig, fs ):
     domain = float(len(sig))
     assert domain > 0
     index = np.argmax(abs(fft(sig)[1:])) + 2
@@ -42,10 +43,10 @@ def wave_freq(sig, fs):
     return freq
 
 
-def estimate_freq_mean(sig, fs):
+def estimate_freq_mean ( sig, fs ):
     nperseg = np.ceil(len(sig) / 2)
     f, P = signal.welch(sig, fs, window='hanning', nperseg=nperseg, noverlap=None, nfft=len(sig), detrend=False, \
-                        return_onesided=True, scaling='density', axis=-1)
+                        return_onesided=True, scaling='spectrum', axis=-1)
     Area = integrate.cumtrapz(P, f, initial=0)
     Ptotal = Area[-1]
     mpf = integrate.trapz(f * P, f) / Ptotal  # mean power frequency
@@ -54,7 +55,7 @@ def estimate_freq_mean(sig, fs):
 
 
 class ParameterEstimation(Observer, Observable):
-    def __init__(self, parameters):
+    def __init__ ( self, parameters ):
         """
         :type parameters: class Parameters object
         """
@@ -67,7 +68,7 @@ class ParameterEstimation(Observer, Observable):
         self.sigma = parameters.sigma
         self.snr = parameters.threshold
 
-    def update(self, event):
+    def update ( self, event ):
         wave = event.mWave
         t0 = event.mTime
         coeff = np.zeros(self.Ncoeff)
@@ -95,7 +96,7 @@ class ParameterEstimation(Observer, Observable):
         valuesnew = []
         for value, positions in nlargest(self.Ncoeff, dnew.items(), key=lambda item: item[0]):
             index = positions[0][0] + positions[0][1]
-            if np.abs(index - index0) < 5:
+            if np.abs(index - index0) < 12:
                 indicesnew.append(index)
                 valuesnew.append(value)
                 index0 = index

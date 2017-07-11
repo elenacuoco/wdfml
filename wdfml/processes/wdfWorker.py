@@ -12,7 +12,7 @@ from wdfml.config.parameters import *
 
 from wdfml.observers.PrintFilePEObserver import *
 #from wdfml.observers.ParameterEstimationObserver import *
-from wdfml.observers.ParameterEstimationLowHighObserver import *
+from wdfml.observers.ParameterEstimationLowHighObserver import  *
 from wdfml.observers.SingleEventPrintFileObserver import  *
 from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
