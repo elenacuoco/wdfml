@@ -11,9 +11,9 @@ from pytsa.tsa import SeqView_double_t as SV
 from wdfml.config.parameters import *
 
 from wdfml.observers.PrintFilePEObserver import *
-#from wdfml.observers.ParameterEstimationObserver import *
-from wdfml.observers.ParameterEstimationLowHighObserver import  *
-from wdfml.observers.SingleEventPrintFileObserver import  *
+# from wdfml.observers.ParameterEstimationObserver import *
+from wdfml.observers.ParameterEstimationLowHighObserver import *
+from wdfml.observers.SingleEventPrintFileObserver import *
 from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
@@ -21,14 +21,14 @@ import time
 
 
 class wdfWorker(object):
-    def __init__ ( self, parameters,fullPrint=1):
+    def __init__ ( self, parameters, fullPrint=1 ):
         self.par = Parameters()
         self.par.copy(parameters)
         self.par.Ncoeff = parameters.window
         self.learnlen = 1.5 * float(parameters.learn)
-        self.fullPrint=fullPrint
+        self.fullPrint = fullPrint
 
-    def segmentProcess ( self, segment, wavThresh= WaveletThreshold.dohonojohnston):
+    def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
         gpsStart = segment[0]
         gpsEnd = segment[1]
         logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
@@ -52,9 +52,11 @@ class wdfWorker(object):
             logging.info('Start AR self.parameter estimation')
             ######## read data for AR estimation###############
             # self.parameter for sequence of data.
-            # Add a 10.0 seconds delay to not include too much after lock noise in the estimation
-            gpsE = gpsStart + 10.0
-
+            # Add a 100.0 seconds delay to not include too much after lock noise in the estimation
+            if (gpsEnd - gpsStart >= self.learnlen + 100.0):
+                gpsE = gpsStart + 100.0
+            else:
+                gpsE = gpsEnd - self.learnlen
             strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
             Learn = SV()
             Learn_DS = SV()
@@ -91,8 +93,8 @@ class wdfWorker(object):
             ds.Process(data, data_ds)
             whiten.Process(data_ds, dataw)
         ### WDF process
-        WDF = wdf(self.par,wavThresh)
-        #WDF=wdf(self.par)
+        WDF = wdf(self.par, wavThresh)
+        # WDF=wdf(self.par)
         ## register obesevers to WDF process
         # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
         savetrigger = SingleEventPrintTriggers(self.par, self.fullPrint)
