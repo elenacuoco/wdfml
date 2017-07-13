@@ -60,7 +60,7 @@ class createSegments(Observable):
                 logging.info("GPStime before sleep: %s" % Info.GetX(0))
                 tstart=Info.GetX(0)
                 itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart-1)
-                time.sleep(2000)
+                time.sleep(1000)
                 logging.info("GPStime after sleep: %s" % Info.GetX(0))
             continue
             start = Info.GetX(0)

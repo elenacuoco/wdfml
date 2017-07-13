@@ -36,7 +36,7 @@ class createSegments(Observable):
                 itfStatus.GetData(Info)
             except:
                 logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                time.sleep(3600)
+                time.sleep(1000)
             else:
                 start = Info.GetX(0)
                 if start == self.lastGPS:
