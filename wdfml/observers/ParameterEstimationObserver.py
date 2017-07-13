@@ -62,11 +62,10 @@ class ParameterEstimation(Observer, Observable):
         Observable.__init__(self)
         Observer.__init__(self)
         self.sampling = parameters.resampling
-        self.sigma = parameters.sigma
         self.Ncoeff = parameters.Ncoeff
         self.scale = int(np.log2(parameters.Ncoeff))
-        self.sigma = parameters.sigma
         self.snr = parameters.threshold
+        self.ARsigma = parameters.sigma
 
     def update ( self, event ):
         wave = event.mWave
@@ -126,11 +125,9 @@ class ParameterEstimation(Observer, Observable):
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
-        snrMax = snrDetailnew / (np.sqrt(2.0) * self.sigma)
+        snrMax = snrDetailnew / (np.sqrt(2.0) * self.ARsigma)
         snr = event.mSNR
-        if snrMax >= self.snr:
-            # freq = wave_freq(Icoeff, self.sampling)
-            # freqatpeak = estimate_freq_max(Icoeff, self.sampling)
-            freq, freqatpeak = estimate_freq_mean(Icoeff, self.sampling)
-            eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
-            self.update_observers(eventParameters)
+
+        freq, freqatpeak = estimate_freq_mean(Icoeff, self.sampling)
+        eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
+        self.update_observers(eventParameters)

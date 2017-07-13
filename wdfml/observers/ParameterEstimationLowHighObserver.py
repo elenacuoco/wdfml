@@ -63,7 +63,7 @@ class ParameterEstimation(Observer, Observable):
         Observable.__init__(self)
         Observer.__init__(self)
         self.sampling = parameters.resampling
-        self.sigma = parameters.sigma
+
         self.Ncoeff = parameters.Ncoeff
         self.scale = int(np.log2(parameters.Ncoeff))
         self.sigma = parameters.sigma

@@ -12,7 +12,7 @@ from wdfml.config.parameters import *
 
 from wdfml.observers.PrintFilePEObserver import *
 # from wdfml.observers.ParameterEstimationObserver import *
-from wdfml.observers.ParameterEstimationLowHighObserver import *
+from wdfml.observers.ParameterEstimationObserver import *
 from wdfml.observers.SingleEventPrintFileObserver import *
 from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
@@ -81,8 +81,8 @@ class wdfWorker(object):
         # self.parameter for sequence of data and the resampling
         self.par.Noutdata = int(self.par.len * self.par.resampling)
         ds = downsamplig(self.par)
-        gpsstart = gpsStart - self.par.preWhite * self.par.len
-        streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsstart)
+        #gpsstart = gpsStart - self.par.preWhite * self.par.len
+        streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsStart)
         data = SV()
         data_ds = SV()
         dataw = SV()
@@ -115,3 +115,5 @@ class wdfWorker(object):
         elapsed_time = time.time() - start_time
         timeslice = gpsEnd - gpsStart
         logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
+        fileEnd=self.par.dir+"ProcessEnded.check"
+        open(fileEnd, 'a').close()
