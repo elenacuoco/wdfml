@@ -100,7 +100,7 @@ class ParameterEstimation(Observer, Observable):
                 valuesnew.append(value)
                 index0 = index
 
-        timeDetailnew = maxvalue[1] / self.sampling
+        timeDetailnew = np.mean(indicesnew) / self.sampling
         timeDuration = (np.max(indicesnew) - np.min(indicesnew)) / self.sampling
         snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
 

@@ -1,19 +1,13 @@
-__author__ = "Elena Cuoco"
-__copyright__ = "Copyright 2017, Elena Cuoco"
-__credits__ = []
-__license__ = "GPL"
-__version__ = "1.0.0"
-__maintainer__ = "Elena Cuoco"
-__email__ = "elena.cuoco@ego-gw.it"
-__status__ = "Development"
-
-import logging
-import time
+__author__ = 'Elena Cuoco'
+__project__ = 'wdfml'
 
 from pytsa.tsa import *
 from pytsa.tsa import SeqView_double_t as SV
-
 from  wdfml.observers.observable import *
+from wdfml.structures.segment import *
+
+import time
+import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -25,7 +19,7 @@ class createSegments(Observable):
         """
         Observable.__init__(self)
         self.file = parameters.file
-        self.state_chan = parameters.status_itf
+        self.state_chan = parameters.state_chan
         self.gps = parameters.gps
         self.minSlice = parameters.minSlice
         self.lastGPS = parameters.lastGPS
@@ -44,7 +38,7 @@ class createSegments(Observable):
                 logging.warning("GPS time: %s. Waiting for new acquired data" % start)
                 time.sleep(1000)
             else:
-
+                start = Info.GetX(0)
                 if start == self.lastGPS:
                     last = True
                     gpsEnd = start
@@ -53,12 +47,11 @@ class createSegments(Observable):
                     self.update_observers([[gpsStart, gpsEnd]], last)
                     self.unregister_all()
                     break
-                if  Info.GetY(0, 0)==self.flag:
-                    start = Info.GetX(0)
+                if Info.GetY(0, 0) == self.flag:
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
-                        gpsEnd = start -1.0
+                        gpsEnd = start
                         gpsStart = gpsEnd - timeslice
                         logging.info(
                             "New science segment created: Start %s End %s Duration %s" % (
@@ -67,3 +60,5 @@ class createSegments(Observable):
                         timeslice = 0.
                     else:
                         timeslice = 0.
+
+
