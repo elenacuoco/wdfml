@@ -100,15 +100,13 @@ class ParameterEstimation(Observer, Observable):
                 valuesnew.append(value)
                 index0 = index
 
-        timeDetailnew = np.mean(indicesnew) / self.sampling
-        timeDuration = (np.max(indicesnew) - np.min(indicesnew)) / self.sampling
-        snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
+
 
         for i in range(self.Ncoeff):
             if i not in indicesnew:
                 coeff[i] = 0.0
 
-        tnew = t0 + timeDetailnew
+
         data = array2SeqView(t0, self.sampling, self.Ncoeff)
         data = data.Fill(t0, coeff)
         dataIdct = array2SeqView(t0, self.sampling, self.Ncoeff)
@@ -124,6 +122,11 @@ class ParameterEstimation(Observer, Observable):
             idct(data, dataIdct)
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
+        #timeDetailnew = np.mean(indicesnew) / self.sampling
+        timeDetailnew = np.argmax(Icoeff) / self.sampling
+        timeDuration = (np.max(indicesnew) - np.min(indicesnew)) / self.sampling
+        snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
+        tnew = t0 + timeDetailnew
 
         snrMax = snrDetailnew / (np.sqrt(2.0) * self.ARsigma)
         snr = event.mSNR

@@ -6,18 +6,19 @@ __version__ = "1.0.0"
 __maintainer__ = "Elena Cuoco"
 __email__ = "elena.cuoco@ego-gw.it"
 __status__ = "Development"
+import time
+
 from pytsa.tsa import *
 from pytsa.tsa import SeqView_double_t as SV
-from wdfml.config.parameters import *
 
-from wdfml.observers.PrintFilePEObserver import *
+from wdfml.config.parameters import *
 # from wdfml.observers.ParameterEstimationObserver import *
 from wdfml.observers.ParameterEstimationObserver import *
+from wdfml.observers.PrintFilePEObserver import *
 from wdfml.observers.SingleEventPrintFileObserver import *
 from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
-import time
 
 
 class wdfWorker(object):
@@ -33,7 +34,7 @@ class wdfWorker(object):
         gpsEnd = segment[1]
         logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
         start_time = time.time()
-        ID = str(self.par.channel) + '_' + str(int(gpsStart))
+        ID = str(self.par.run) + '_' + str(self.par.channel) + '_' + str(int(gpsStart))
         dir_chunk = self.par.outdir + ID + '/'
         # create the output dir
         if not os.path.exists(dir_chunk):
@@ -81,7 +82,7 @@ class wdfWorker(object):
         # self.parameter for sequence of data and the resampling
         self.par.Noutdata = int(self.par.len * self.par.resampling)
         ds = downsamplig(self.par)
-        #gpsstart = gpsStart - self.par.preWhite * self.par.len
+        # gpsstart = gpsStart - self.par.preWhite * self.par.len
         streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsStart)
         data = SV()
         data_ds = SV()
@@ -115,5 +116,5 @@ class wdfWorker(object):
         elapsed_time = time.time() - start_time
         timeslice = gpsEnd - gpsStart
         logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
-        fileEnd=self.par.dir+"ProcessEnded.check"
+        fileEnd = self.par.dir + "ProcessEnded.check"
         open(fileEnd, 'a').close()
