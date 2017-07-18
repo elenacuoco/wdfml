@@ -15,7 +15,7 @@ import os.path
 class PrintClusteredTriggers(Observer):
     def __init__ ( self, par, fullPrint=0):
         self.filesave = par.dir + 'WDFTrigger-%s-GPS%s-AR%s-Win%s-Ov%s-SNR%s.csv' % (
-            par.chan, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
+            par.channel, int(par.gpsStart), par.ARorder, par.window, par.overlap, int(par.threshold))
         self.id = 0
         if os.path.isfile(self.filesave):
             try:

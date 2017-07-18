@@ -6,13 +6,14 @@ __version__ = "1.0.0"
 __maintainer__ = "Elena Cuoco"
 __email__ = "elena.cuoco@ego-gw.it"
 __status__ = "Development"
+
+import logging
 import time
 
 from pytsa.tsa import *
 from pytsa.tsa import SeqView_double_t as SV
 
 from wdfml.config.parameters import *
-# from wdfml.observers.ParameterEstimationObserver import *
 from wdfml.observers.ParameterEstimationObserver import *
 from wdfml.observers.PrintFilePEObserver import *
 from wdfml.observers.SingleEventPrintFileObserver import *
@@ -20,14 +21,21 @@ from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
 
-
-class wdfWorker(object):
+class wdfAdaptiveWorker(object):
     def __init__ ( self, parameters, fullPrint=1 ):
         self.par = Parameters()
         self.par.copy(parameters)
         self.par.Ncoeff = parameters.window
         self.learnlen = 1.5 * float(parameters.learn)
         self.fullPrint = fullPrint
+        try:
+            self.Alambda = float(parameters.Alambda)
+        except:
+            logging.error("Adaptive lambda not defined")
+        try:
+            self.Elambda = float(parameters.Elambda)
+        except:
+            logging.error("Adaptive Estimation lambda not defined")
 
     def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
         gpsStart = segment[0]
@@ -54,10 +62,8 @@ class wdfWorker(object):
             ######## read data for AR estimation###############
             # self.parameter for sequence of data.
             # Add a 100.0 seconds delay to not include too much after lock noise in the estimation
-            if (gpsEnd - gpsStart >= self.learnlen + 100.0):
-                gpsE = gpsStart + 100.0
-            else:
-                gpsE = gpsEnd - self.learnlen
+
+            gpsE = gpsStart +10
             strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
             Learn = SV()
             Learn_DS = SV()
@@ -67,10 +73,11 @@ class wdfWorker(object):
             ds.Process(Learn, Learn_DS)
             whiten.ParametersEstimate(Learn_DS)
             whiten.ParametersSave(self.par.ARfile, self.par.LVfile)
-            del Learn, ds, strLearn, Learn_DS
+
         # sigma for the noise
         self.par.sigma = whiten.GetSigma()
         logging.info('Estimated sigma= %s' % self.par.sigma)
+        LSL = LSLLearning(self.par.ARorder, self.par.sigma, self.Elambda)
         ## update the self.parameters to be saved in local json file
         self.par.ID = ID
         self.par.dir = dir_chunk
@@ -79,22 +86,34 @@ class wdfWorker(object):
         self.par.gpsEnd = gpsEnd
 
         ######################
+        ######################
         # self.parameter for sequence of data and the resampling
         self.par.Noutdata = int(self.par.len * self.par.resampling)
         ds = downsamplig(self.par)
         # gpsstart = gpsStart - self.par.preWhite * self.par.len
-        streaming = FrameIChannel(self.par.file, self.par.channel, self.par.len, gpsStart)
+        streaming = FrameIChannel(self.par.file, self.par.channel, 2 * self.par.len, gpsStart)
         data = SV()
         data_ds = SV()
         dataw = SV()
         ###---preheating---###
         # reading data, downsampling and whitening
+
+        streaming.GetData(data)
+        ds.Process(data, data_ds)
+        LSL(data_ds, dataw)
+        ds.Process(data, data_ds)
+        LSL(data_ds, dataw)
+        lsl = LSLfilter(LSL, self.Alambda, self.par.window, False)
         for i in range(self.par.preWhite):
             streaming.GetData(data)
             ds.Process(data, data_ds)
-            whiten.Process(data_ds, dataw)
+            lsl(data_ds, dataw)
+
+
+
         ### WDF process
         WDF = wdf(self.par, wavThresh)
+
         # WDF=wdf(self.par)
         ## register obesevers to WDF process
         # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
@@ -104,12 +123,13 @@ class wdfWorker(object):
         WDF.register(parameterestimation)
         filejson = 'parametersUsed.json'
         self.par.dump(self.par.dir + filejson)
+
         ###Start detection loop
         logging.info("Starting detection loop")
         while data.GetStart() < gpsEnd:
             streaming.GetData(data)
             ds.Process(data, data_ds)
-            whiten.Process(data_ds, dataw)
+            lsl(data_ds, dataw)
             WDF.SetData(dataw)
             WDF.Process()
 

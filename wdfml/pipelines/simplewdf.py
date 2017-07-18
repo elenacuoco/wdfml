@@ -19,7 +19,7 @@ def main(param):
     logging.info("read Parameters")
     par = Parameters()
     par.load(param)
-    ID = str(par.chan) + '_' + str(par.gps)
+    ID = str(par.channel) + '_' + str(par.gps)
     par.outdir = par.outdir + ID + '/'
     if not os.path.exists(par.outdir):
         os.makedirs(par.outdir)
@@ -41,13 +41,13 @@ def main(param):
         Learn = SV()
         Learn_DS = SV()
         learnlen = 2.0 * float(par.learn)
-        strLearn = FrameIChannel(par.file, par.chan, 1.0, gpsE)
+        strLearn = FrameIChannel(par.file, par.channel, 1.0, gpsE)
         strLearn.GetData(Learn)
 
         par.sampling = int(1.0 / Learn.GetSampling())
         par.resampling = int(sampling / 2)
 
-        strLearn = FrameIChannel(par.file, par.chan, learnlen, gpsE)
+        strLearn = FrameIChannel(par.file, par.channel, learnlen, gpsE)
         par.Noutdata = int(par.learn * par.resampling)
         ds = downsamplig(par)
         strLearn.GetData(Learn)
@@ -61,7 +61,7 @@ def main(param):
     par.Noutdata = int(par.len * par.resampling)
     ds = downsamplig(par)
     gpsstart = par.gpsStart - par.len
-    streaming = FrameIChannel(par.file, par.chan, par.lenStart, gpsstart)
+    streaming = FrameIChannel(par.file, par.channel, par.lenStart, gpsstart)
     data = SV()
     data_ds = SV()
     dataw = SV()

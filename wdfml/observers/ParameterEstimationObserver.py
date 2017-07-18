@@ -74,7 +74,7 @@ class ParameterEstimation(Observer, Observable):
         Icoeff = np.zeros(self.Ncoeff)
         for i in range(self.Ncoeff):
             coeff[i] = event.GetCoeff(i)
-
+        sigma = 1.0/(event.mSNR/ np.sqrt(np.sum([x * x for x in coeff])))
         #### here we reconstruct really the event in the wavelet plane
 
         new = np.zeros((int(self.scale), int(2 ** ((self.scale) - 1))))
@@ -95,7 +95,7 @@ class ParameterEstimation(Observer, Observable):
         valuesnew = []
         for value, positions in nlargest(self.Ncoeff, dnew.items(), key=lambda item: item[0]):
             index = positions[0][0] + positions[0][1]
-            if np.abs(index - index0) / index0 < 0.2:
+            if np.abs(index - index0) / index0 < 0.1:
                 indicesnew.append(index)
                 valuesnew.append(value)
                 index0 = index
@@ -119,13 +119,14 @@ class ParameterEstimation(Observer, Observable):
             idct(data, dataIdct)
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
-        # timeDetailnew = np.mean(indicesnew) / self.sampling
-        timeDetailnew = np.argmax(Icoeff) / self.sampling
+
         timeDuration = (np.max(indicesnew) - np.min(indicesnew)) / self.sampling
+        #timeDetailnew = maxvalue[1] / self.sampling
+        timeDetailnew = timeDuration / (2*self.sampling)
         snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
         tnew = t0 + timeDetailnew
 
-        snrMax = snrDetailnew / (np.sqrt(2.0) * self.ARsigma)
+        snrMax = snrDetailnew / sigma
         snr = event.mSNR
 
 

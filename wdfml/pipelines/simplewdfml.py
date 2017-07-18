@@ -32,13 +32,13 @@ def main ( ):
     # parameter for whitening and its estimation parameters
     whiten = Whitening(par.ARorder)
     ###Name of the files where the whitening parameters are saved
-    LVfile = "./ARparameters/LVstate_%s_%s_%s.txt" % (par.ARorder, par.chan, int(par.gps))
-    ARfile = "./ARparameters/ARstate_%s_%s_%s.txt" % (par.ARorder, par.chan, int(par.gps))
+    LVfile = "./ARparameters/LVstate_%s_%s_%s.txt" % (par.ARorder, par.channel, int(par.gps))
+    ARfile = "./ARparameters/ARstate_%s_%s_%s.txt" % (par.ARorder, par.channel, int(par.gps))
     if par.estimation == "True":
         logging.info('Start AR parameter estimation')
         ######## read data for AR estimation###############
         learnlen = 2.0 * float(par.learn)
-        strLearn = FrameIChannel(par.file, par.chan, learnlen, gpsE)
+        strLearn = FrameIChannel(par.file, par.channel, learnlen, gpsE)
         par.Noutdata = int(par.learn * par.resampling)
         ds = downsamplig(par)
         strLearn.GetData(Learn)
@@ -55,7 +55,7 @@ def main ( ):
     par.Noutdata = int(par.len * par.resampling)
     ds = downsamplig(par)
     gpsstart = par.gpsStart - par.len
-    streaming = FrameIChannel(par.file, par.chan, par.lenStart, gpsstart)
+    streaming = FrameIChannel(par.file, par.channel, par.lenStart, gpsstart)
     data = SV()
     data_ds = SV()
     dataw = SV()

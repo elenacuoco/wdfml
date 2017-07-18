@@ -40,43 +40,28 @@ class wdfAdaptiveWorker(object):
     def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
         gpsStart = segment[0]
         gpsEnd = segment[1]
-        logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
+        logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channelnel))
         start_time = time.time()
-        ID = str(self.par.run) + '_' + str(self.par.channel) + '_' + str(int(gpsStart))
+        ID = str(self.par.run) + '_' + str(self.par.channelnel) + '_' + str(int(gpsStart))
         dir_chunk = self.par.outdir + ID + '/'
         # create the output dir
         if not os.path.exists(dir_chunk):
             os.makedirs(dir_chunk)
-        # self.parameter for whitening and its estimation self.parameters
-        whiten = Whitening(self.par.ARorder)
-        self.par.ARfile = dir_chunk + "ARcoeff-AR%s-fs%s-%s.txt" % (
-            self.par.ARorder, self.par.resampling, self.par.channel)
-        self.par.LVfile = dir_chunk + "LVcoeff-AR%s-fs%s-%s.txt" % (
-            self.par.ARorder, self.par.resampling, self.par.channel)
 
-        if os.path.isfile(self.par.ARfile) and os.path.isfile(self.par.LVfile):
-            logging.info('Load AR self.parameter')
-            whiten.ParametersLoad(self.par.ARfile, self.par.LVfile)
-        else:
-            logging.info('Start AR self.parameter estimation')
-            ######## read data for AR estimation###############
-            # self.parameter for sequence of data.
-            # Add a 100.0 seconds delay to not include too much after lock noise in the estimation
+        strLearn = FrameIChannel(self.par.file, self.par.channelnel, self.learnlen, gpsStart)
+        Learn = SV()
+        Learn_DS = SV()
+        self.par.Noutdata = int(self.par.learn * self.par.resampling)
+        ds = downsamplig(self.par)
+        strLearn.GetData(Learn)
+        ds.Process(Learn, Learn_DS)
+        # estimate rough sigma
+        y = np.empty(self.par.Noutdata)
+        for j in range(self.par.Noutdata):
+            y[j] = Learn_DS.GetY(0, j)
+        self.par.sigma = np.std(y) * np.std(y) * self.par.resampling
 
-            gpsE = gpsStart +10
-            strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
-            Learn = SV()
-            Learn_DS = SV()
-            self.par.Noutdata = int(self.par.learn * self.par.resampling)
-            ds = downsamplig(self.par)
-            strLearn.GetData(Learn)
-            ds.Process(Learn, Learn_DS)
-            whiten.ParametersEstimate(Learn_DS)
-            whiten.ParametersSave(self.par.ARfile, self.par.LVfile)
-
-        # sigma for the noise
-        self.par.sigma = whiten.GetSigma()
-        logging.info('Estimated sigma= %s' % self.par.sigma)
+        logging.info('Rough Estimated sigma= %s' % self.par.sigma)
         LSL = LSLLearning(self.par.ARorder, self.par.sigma, self.Elambda)
         ## update the self.parameters to be saved in local json file
         self.par.ID = ID
@@ -84,14 +69,14 @@ class wdfAdaptiveWorker(object):
         self.par.gps = gpsStart
         self.par.gpsStart = gpsStart
         self.par.gpsEnd = gpsEnd
-        self.par.chan = self.par.channel
+
         ######################
         ######################
         # self.parameter for sequence of data and the resampling
         self.par.Noutdata = int(self.par.len * self.par.resampling)
         ds = downsamplig(self.par)
         # gpsstart = gpsStart - self.par.preWhite * self.par.len
-        streaming = FrameIChannel(self.par.file, self.par.channel, 2 * self.par.len, gpsStart)
+        streaming = FrameIChannel(self.par.file, self.par.channelnel, 2 * self.par.len, gpsStart)
         data = SV()
         data_ds = SV()
         dataw = SV()
@@ -103,13 +88,11 @@ class wdfAdaptiveWorker(object):
         LSL(data_ds, dataw)
         ds.Process(data, data_ds)
         LSL(data_ds, dataw)
-        lsl = LSLfilter(LSL, self.Alambda, self.par.window, False)
+        lsl = LSLfilter(LSL, self.Alambda, self.par.Noutdata, False)
         for i in range(self.par.preWhite):
             streaming.GetData(data)
             ds.Process(data, data_ds)
             lsl(data_ds, dataw)
-
-
 
         ### WDF process
         WDF = wdf(self.par, wavThresh)
@@ -121,9 +104,12 @@ class wdfAdaptiveWorker(object):
         parameterestimation = ParameterEstimation(self.par)
         parameterestimation.register(savetrigger)
         WDF.register(parameterestimation)
+        self.par.LSLfile = dir_chunk + "LSLcoeff-AR%s-fs%s-%s.txt" % (
+            self.par.ARorder, self.par.resampling, self.par.channelnel)
         filejson = 'parametersUsed.json'
         self.par.dump(self.par.dir + filejson)
 
+        lsl.Save(self.par.LSLfile)
         ###Start detection loop
         logging.info("Starting detection loop")
         while data.GetStart() < gpsEnd:
@@ -132,6 +118,8 @@ class wdfAdaptiveWorker(object):
             lsl(data_ds, dataw)
             WDF.SetData(dataw)
             WDF.Process()
+
+        lsl.Save(self.par.LSLfile)
 
         elapsed_time = time.time() - start_time
         timeslice = gpsEnd - gpsStart
