@@ -2,10 +2,12 @@ __author__ = 'Elena Cuoco'
 __project__ = 'wdfml'
 
 from pytsa.tsa import *
+
 from  wdfml.observers.observable import *
 
+
 class wdf(Observable):
-    def __init__ ( self, parameters,wTh=WaveletThreshold.cuoco):
+    def __init__ ( self, parameters, wTh=WaveletThreshold.dohonojohnston):
         """
         :type parameters: class Parameters
         """
@@ -40,8 +42,8 @@ class wdf(Observable):
         self.wdf2classify(self.trigger)
         return self.trigger
 
-    def Process(self):
+    def Process ( self ):
         while self.wdf2classify.GetDataNeeded() > 0:
             self.wdf2classify(self.trigger)
-            if self.trigger.mWave!='':
+            if self.trigger.mWave != '':
                 self.update_observers(self.trigger)

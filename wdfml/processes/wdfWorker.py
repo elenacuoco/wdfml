@@ -24,10 +24,12 @@ from wdfml.processes.whitening import *
 class wdfWorker(object):
     def __init__ ( self, parameters, fullPrint=1 ):
         self.par = Parameters()
+
         self.par.copy(parameters)
         self.par.Ncoeff = parameters.window
         self.learnlen = 1.5 * float(parameters.learn)
         self.fullPrint = fullPrint
+        self.par.channel = parameters.channel
 
     def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
         gpsStart = segment[0]

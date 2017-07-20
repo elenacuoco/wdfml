@@ -30,6 +30,7 @@ class createSegments(Observable):
         self.minSlice = parameters.minSlice
         self.lastGPS = parameters.lastGPS
         self.flag = parameters.flag
+        self.process = parameters.process  # define if if you are running while taking data
 
     def Process ( self ):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
@@ -41,10 +42,13 @@ class createSegments(Observable):
             try:
                 itfStatus.GetData(Info)
             except:
-                logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                time.sleep(1000)
+                if self.process == 1:  # online
+                    logging.warning("GPS time: %s. Waiting for new acquired data" % start)
+                    time.sleep(1000)
+                else:
+                    logging.error("GPS time: %s. DAQ problem" % start)
+                    pass
             else:
-
                 if start == self.lastGPS:
                     last = True
                     gpsEnd = start
@@ -53,15 +57,17 @@ class createSegments(Observable):
                     self.update_observers([[gpsStart, gpsEnd]], last)
                     self.unregister_all()
                     break
-                if  Info.GetY(0, 0)==self.flag:
+                if Info.GetY(0, 0) == 0:
+                    logging.error("MISSING DATA @GPS %s" % start)
+                if Info.GetY(0, 0) == self.flag:
                     start = Info.GetX(0)
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
-                        gpsEnd = start -1.0
+                        gpsEnd = start + 1.0
                         gpsStart = gpsEnd - timeslice
                         logging.info(
-                            "New science segment created: Start %s End %s Duration %s" % (
+                            "New segment created: Start %s End %s Duration %s" % (
                                 gpsStart, gpsEnd, timeslice))
                         self.update_observers([[gpsStart, gpsEnd]], last)
                         timeslice = 0.

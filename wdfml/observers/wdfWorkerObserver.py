@@ -7,11 +7,8 @@ __maintainer__ = "Elena Cuoco"
 __email__ = "elena.cuoco@ego-gw.it"
 __status__ = "Development"
 
-from wdfml.config.parameters import *
-from multiprocessing import Process
-from wdfml.observers.observer import Observer
-from wdfml.observers.observable import Observable
 import multiprocessing as mp
+
 from wdfml.processes.wdfWorker import *
 
 
@@ -19,7 +16,7 @@ from wdfml.processes.wdfWorker import *
 # @autojit
 
 class wdfWorkerObserver(Observer, Observable):
-    def __init__ ( self, parameters,fullPrint=0):
+    def __init__ ( self, parameters, fullPrint=0 ):
         """
         :type self.parameters: class self.parameters object
         """
@@ -31,13 +28,12 @@ class wdfWorkerObserver(Observer, Observable):
         self.par.copy(parameters)
         self.wdfworker = wdfWorker(self.par, fullPrint)
 
-
     def wait_completion ( self ):
         """ Wait for completion of all the tasks in the queue """
         self.pool.close()
         self.pool.join()
 
-    def update ( self, segment,last ):
+    def update ( self, segment, last ):
         try:
             if last:
                 logging.info("Last job launched")
