@@ -38,6 +38,7 @@ class createSegments(Observable):
         timeslice = 0.
         start = self.gps
         last = False
+        fails=0
         while start < self.lastGPS:
             try:
                 itfStatus.GetData(Info)
@@ -46,19 +47,13 @@ class createSegments(Observable):
                     logging.warning("GPS time: %s. Waiting for new acquired data" % start)
                     time.sleep(1000)
                 else:
-                    logging.error("GPS time: %s. DAQ problem" % start)
+                    fails+=1
+                    start = start + 1.0
+                    itfStatus = FrameIChannel(self.file, self.state_chan, 1., start)
+                    Info = SV()
+                    time.sleep(1)
                     pass
             else:
-                if start == self.lastGPS:
-                    last = True
-                    gpsEnd = start
-                    gpsStart = gpsEnd - timeslice
-                    logging.info("Segment creation completed")
-                    self.update_observers([[gpsStart, gpsEnd]], last)
-                    self.unregister_all()
-                    break
-                if Info.GetY(0, 0) == 0:
-                    logging.error("MISSING DATA @GPS %s" % start)
                 if Info.GetY(0, 0) == self.flag:
                     start = Info.GetX(0)
                     timeslice += 1.0
@@ -70,6 +65,22 @@ class createSegments(Observable):
                             "New segment created: Start %s End %s Duration %s" % (
                                 gpsStart, gpsEnd, timeslice))
                         self.update_observers([[gpsStart, gpsEnd]], last)
+                        logging.error("Total Fails: %s" % fails)
+                        fails=0
                         timeslice = 0.
                     else:
                         timeslice = 0.
+                if start == self.lastGPS:
+                    last = True
+                    gpsEnd = start
+                    gpsStart = gpsEnd - timeslice
+                    logging.info("Segment creation completed")
+                    self.update_observers([[gpsStart, gpsEnd]], last)
+                    self.unregister_all()
+                    break
+                if Info.GetY(0, 0) == 0:
+                    logging.error("MISSING DATA @GPS %s" % start)
+                    fails += 1
+                    timeslice = 0.
+
+                    pass
