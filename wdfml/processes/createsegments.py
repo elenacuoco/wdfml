@@ -38,24 +38,22 @@ class createSegments(Observable):
         timeslice = 0.
         start = self.gps
         last = False
-        fails=0
+        fails = 0
         while start < self.lastGPS:
             try:
                 itfStatus.GetData(Info)
             except:
                 if self.process == 1:  # online
                     logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                    time.sleep(1000)
+                    time.sleep(300)
                 else:
-                    fails+=1
-                    start = start + 1.0
-                    itfStatus = FrameIChannel(self.file, self.state_chan, 1., start)
-                    Info = SV()
-                    time.sleep(1)
-                    pass
+                    fails += 1
             else:
+                start = Info.GetX(0)
+                if Info.GetY(0, 0) == 0:
+                    logging.error("MISSING DATA @GPS %s" % start)
+                    fails += 1
                 if Info.GetY(0, 0) == self.flag:
-                    start = Info.GetX(0)
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
@@ -66,10 +64,7 @@ class createSegments(Observable):
                                 gpsStart, gpsEnd, timeslice))
                         self.update_observers([[gpsStart, gpsEnd]], last)
                         logging.error("Total Fails: %s" % fails)
-                        fails=0
-                        timeslice = 0.
-                    else:
-                        timeslice = 0.
+                    timeslice = 0.
                 if start == self.lastGPS:
                     last = True
                     gpsEnd = start
@@ -78,9 +73,3 @@ class createSegments(Observable):
                     self.update_observers([[gpsStart, gpsEnd]], last)
                     self.unregister_all()
                     break
-                if Info.GetY(0, 0) == 0:
-                    logging.error("MISSING DATA @GPS %s" % start)
-                    fails += 1
-                    timeslice = 0.
-
-                    pass
