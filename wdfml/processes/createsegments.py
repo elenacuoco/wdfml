@@ -45,8 +45,10 @@ class createSegments(Observable):
             except:
                 if self.process == 1:  # online
                     logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                    time.sleep(300)
+                    timeslice += 1.0
+                    time.sleep(600)
                 else:
+                    timeslice=0
                     fails += 1
             else:
                 start = Info.GetX(0)
@@ -57,7 +59,7 @@ class createSegments(Observable):
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
-                        gpsEnd = start + 1.0
+                        gpsEnd = start+1
                         gpsStart = gpsEnd - timeslice
                         logging.info(
                             "New segment created: Start %s End %s Duration %s" % (

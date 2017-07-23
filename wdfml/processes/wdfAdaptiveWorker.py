@@ -40,89 +40,89 @@ class wdfAdaptiveWorker(object):
     def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
         gpsStart = segment[0]
         gpsEnd = segment[1]
-        logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channelnel))
+        logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
         start_time = time.time()
-        ID = str(self.par.run) + '_' + str(self.par.channelnel) + '_' + str(int(gpsStart))
+        ID = str(self.par.run) + '_' + str(self.par.channel) + '_' + str(int(gpsStart))
         dir_chunk = self.par.outdir + ID + '/'
         # create the output dir
         if not os.path.exists(dir_chunk):
             os.makedirs(dir_chunk)
+        if not os.path.isfile(dir_chunk + 'ProcessEnded.check'):
+            strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsStart)
+            Learn = SV()
+            Learn_DS = SV()
+            self.par.Noutdata = int(self.par.learn * self.par.resampling)
+            ds = downsamplig(self.par)
+            strLearn.GetData(Learn)
+            ds.Process(Learn, Learn_DS)
+            # estimate rough sigma
+            y = np.empty(self.par.Noutdata)
+            for j in range(self.par.Noutdata):
+                y[j] = Learn_DS.GetY(0, j)
+            self.par.sigma = np.std(y) * np.std(y) * self.par.resampling
 
-        strLearn = FrameIChannel(self.par.file, self.par.channelnel, self.learnlen, gpsStart)
-        Learn = SV()
-        Learn_DS = SV()
-        self.par.Noutdata = int(self.par.learn * self.par.resampling)
-        ds = downsamplig(self.par)
-        strLearn.GetData(Learn)
-        ds.Process(Learn, Learn_DS)
-        # estimate rough sigma
-        y = np.empty(self.par.Noutdata)
-        for j in range(self.par.Noutdata):
-            y[j] = Learn_DS.GetY(0, j)
-        self.par.sigma = np.std(y) * np.std(y) * self.par.resampling
+            logging.info('Rough Estimated sigma= %s' % self.par.sigma)
+            LSL = LSLLearning(self.par.ARorder, self.par.sigma, self.Elambda)
+            ## update the self.parameters to be saved in local json file
+            self.par.ID = ID
+            self.par.dir = dir_chunk
+            self.par.gps = gpsStart
+            self.par.gpsStart = gpsStart
+            self.par.gpsEnd = gpsEnd
 
-        logging.info('Rough Estimated sigma= %s' % self.par.sigma)
-        LSL = LSLLearning(self.par.ARorder, self.par.sigma, self.Elambda)
-        ## update the self.parameters to be saved in local json file
-        self.par.ID = ID
-        self.par.dir = dir_chunk
-        self.par.gps = gpsStart
-        self.par.gpsStart = gpsStart
-        self.par.gpsEnd = gpsEnd
+            ######################
+            ######################
+            # self.parameter for sequence of data and the resampling
+            self.par.Noutdata = int(self.par.len * self.par.resampling)
+            ds = downsamplig(self.par)
+            # gpsstart = gpsStart - self.par.preWhite * self.par.len
+            streaming = FrameIChannel(self.par.file, self.par.channel, 2 * self.par.len, gpsStart)
+            data = SV()
+            data_ds = SV()
+            dataw = SV()
+            ###---preheating---###
+            # reading data, downsampling and whitening
 
-        ######################
-        ######################
-        # self.parameter for sequence of data and the resampling
-        self.par.Noutdata = int(self.par.len * self.par.resampling)
-        ds = downsamplig(self.par)
-        # gpsstart = gpsStart - self.par.preWhite * self.par.len
-        streaming = FrameIChannel(self.par.file, self.par.channelnel, 2 * self.par.len, gpsStart)
-        data = SV()
-        data_ds = SV()
-        dataw = SV()
-        ###---preheating---###
-        # reading data, downsampling and whitening
-
-        streaming.GetData(data)
-        ds.Process(data, data_ds)
-        LSL(data_ds, dataw)
-        ds.Process(data, data_ds)
-        LSL(data_ds, dataw)
-        lsl = LSLfilter(LSL, self.Alambda, self.par.Noutdata, False)
-        for i in range(self.par.preWhite):
             streaming.GetData(data)
             ds.Process(data, data_ds)
-            lsl(data_ds, dataw)
-
-        ### WDF process
-        WDF = wdf(self.par, wavThresh)
-
-        # WDF=wdf(self.par)
-        ## register obesevers to WDF process
-        # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
-        savetrigger = SingleEventPrintTriggers(self.par, self.fullPrint)
-        parameterestimation = ParameterEstimation(self.par)
-        parameterestimation.register(savetrigger)
-        WDF.register(parameterestimation)
-        self.par.LSLfile = dir_chunk + "LSLcoeff-AR%s-fs%s-%s.txt" % (
-            self.par.ARorder, self.par.resampling, self.par.channelnel)
-        filejson = 'parametersUsed.json'
-        self.par.dump(self.par.dir + filejson)
-
-        lsl.Save(self.par.LSLfile)
-        ###Start detection loop
-        logging.info("Starting detection loop")
-        while data.GetStart() < gpsEnd:
-            streaming.GetData(data)
+            LSL(data_ds, dataw)
             ds.Process(data, data_ds)
-            lsl(data_ds, dataw)
-            WDF.SetData(dataw)
-            WDF.Process()
+            LSL(data_ds, dataw)
+            lsl = LSLfilter(LSL, self.Alambda, self.par.Noutdata, False)
+            for i in range(self.par.preWhite):
+                streaming.GetData(data)
+                ds.Process(data, data_ds)
+                lsl(data_ds, dataw)
 
-        lsl.Save(self.par.LSLfile)
+            ### WDF process
+            WDF = wdf(self.par, wavThresh)
 
-        elapsed_time = time.time() - start_time
-        timeslice = gpsEnd - gpsStart
-        logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
-        fileEnd = self.par.dir + "ProcessEnded.check"
-        open(fileEnd, 'a').close()
+            # WDF=wdf(self.par)
+            ## register obesevers to WDF process
+            # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
+            savetrigger = SingleEventPrintTriggers(self.par, self.fullPrint)
+            parameterestimation = ParameterEstimation(self.par)
+            parameterestimation.register(savetrigger)
+            WDF.register(parameterestimation)
+            self.par.LSLfile = dir_chunk + "LSLcoeff-AR%s-fs%s-%s.txt" % (
+                self.par.ARorder, self.par.resampling, self.par.channel)
+            filejson = 'parametersUsed.json'
+            self.par.dump(self.par.dir + filejson)
+
+            lsl.Save(self.par.LSLfile)
+            ###Start detection loop
+            logging.info("Starting detection loop")
+            while data.GetStart() < gpsEnd:
+                streaming.GetData(data)
+                ds.Process(data, data_ds)
+                lsl(data_ds, dataw)
+                WDF.SetData(dataw)
+                WDF.Process()
+
+            lsl.Save(self.par.LSLfile)
+
+            elapsed_time = time.time() - start_time
+            timeslice = gpsEnd - gpsStart
+            logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
+            fileEnd = self.par.dir + "ProcessEnded.check"
+            open(fileEnd, 'a').close()
