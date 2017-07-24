@@ -59,7 +59,7 @@ class createSegments(Observable):
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
-                        gpsEnd = start+1
+                        gpsEnd = start
                         gpsStart = gpsEnd - timeslice
                         logging.info(
                             "New segment created: Start %s End %s Duration %s" % (

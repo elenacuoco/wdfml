@@ -301,7 +301,6 @@ class WDFMLClassify(object):
         return self.labels
 
     def PlotClustering ( self ):
-        plt.figure(figsize=(14, 10))
         plt.xlim(min(self.X_red[:, 0]) - 0.1, max(self.X_red[:, 0]) + 0.1)
         plt.ylim(min(self.X_red[:, 1]) - 0.1, max(self.X_red[:, 1]) + 0.1)
 
@@ -310,4 +309,4 @@ class WDFMLClassify(object):
         for i in range(self.X_red.shape[0]):
             plt.text(self.X_red[i, 0], self.X_red[i, 1], str(self.labels[i]),
                      color=plt.cm.spectral(self.labels[i] / 10.0),
-                                           fontdict={'weight': 'bold', 'size': 14})
+                                           fontdict={'weight': 'bold', 'size': 12})

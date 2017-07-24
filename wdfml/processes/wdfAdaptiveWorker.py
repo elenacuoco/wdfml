@@ -15,18 +15,18 @@ from pytsa.tsa import SeqView_double_t as SV
 
 from wdfml.config.parameters import *
 from wdfml.observers.ParameterEstimationObserver import *
-from wdfml.observers.PrintFilePEObserver import *
 from wdfml.observers.SingleEventPrintFileObserver import *
 from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
-from wdfml.processes.whitening import *
+
 
 class wdfAdaptiveWorker(object):
     def __init__ ( self, parameters, fullPrint=1 ):
         self.par = Parameters()
         self.par.copy(parameters)
         self.par.Ncoeff = parameters.window
-        self.learnlen = 1.5 * float(parameters.learn)
+        self.learn = 20.0 * float(parameters.len)
+        self.lenin = 2.0 * float(parameters.len)
         self.fullPrint = fullPrint
         try:
             self.Alambda = float(parameters.Alambda)
@@ -48,19 +48,21 @@ class wdfAdaptiveWorker(object):
         if not os.path.exists(dir_chunk):
             os.makedirs(dir_chunk)
         if not os.path.isfile(dir_chunk + 'ProcessEnded.check'):
-            strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsStart)
-            Learn = SV()
-            Learn_DS = SV()
-            self.par.Noutdata = int(self.par.learn * self.par.resampling)
+            streaming = FrameIChannel(self.par.file, self.par.channel, self.learn, gpsStart)
+            data = SV()
+            data_ds = SV()
+            dataw = SV()
+            self.par.Noutdata = int(10*self.par.len * self.par.resampling)
             ds = downsamplig(self.par)
-            strLearn.GetData(Learn)
-            ds.Process(Learn, Learn_DS)
+            streaming.GetData(data)
+            ds.Process(data, data_ds)
+            streaming.GetData(data)
+            ds.Process(data, data_ds)
             # estimate rough sigma
             y = np.empty(self.par.Noutdata)
             for j in range(self.par.Noutdata):
-                y[j] = Learn_DS.GetY(0, j)
+                y[j] = data_ds.GetY(0, j)
             self.par.sigma = np.std(y) * np.std(y) * self.par.resampling
-
             logging.info('Rough Estimated sigma= %s' % self.par.sigma)
             LSL = LSLLearning(self.par.ARorder, self.par.sigma, self.Elambda)
             ## update the self.parameters to be saved in local json file
@@ -69,20 +71,14 @@ class wdfAdaptiveWorker(object):
             self.par.gps = gpsStart
             self.par.gpsStart = gpsStart
             self.par.gpsEnd = gpsEnd
-
             ######################
             ######################
-            # self.parameter for sequence of data and the resampling
-            self.par.Noutdata = int(self.par.len * self.par.resampling)
-            ds = downsamplig(self.par)
-            # gpsstart = gpsStart - self.par.preWhite * self.par.len
-            streaming = FrameIChannel(self.par.file, self.par.channel, 2 * self.par.len, gpsStart)
-            data = SV()
-            data_ds = SV()
-            dataw = SV()
             ###---preheating---###
             # reading data, downsampling and whitening
-
+            self.par.Noutdata=int(self.par.len * self.par.resampling)
+            gpsstart=data.GetStart()
+            streaming = FrameIChannel(self.par.file, self.par.channel, self.lenin, gpsstart)
+            ds = downsamplig(self.par)
             streaming.GetData(data)
             ds.Process(data, data_ds)
             LSL(data_ds, dataw)
@@ -94,10 +90,11 @@ class wdfAdaptiveWorker(object):
                 ds.Process(data, data_ds)
                 lsl(data_ds, dataw)
 
+            self.par.sigma=lsl.GetSigma(self.par.Noutdata-1)
+            logging.info('LSL Estimated sigma= %s' % self.par.sigma)
             ### WDF process
             WDF = wdf(self.par, wavThresh)
 
-            # WDF=wdf(self.par)
             ## register obesevers to WDF process
             # put 0 to save only metaself.parameters, 1 for wavelet coefficients and 2 for waveform estimation
             savetrigger = SingleEventPrintTriggers(self.par, self.fullPrint)
@@ -108,8 +105,6 @@ class wdfAdaptiveWorker(object):
                 self.par.ARorder, self.par.resampling, self.par.channel)
             filejson = 'parametersUsed.json'
             self.par.dump(self.par.dir + filejson)
-
-            lsl.Save(self.par.LSLfile)
             ###Start detection loop
             logging.info("Starting detection loop")
             while data.GetStart() < gpsEnd:
@@ -120,7 +115,6 @@ class wdfAdaptiveWorker(object):
                 WDF.Process()
 
             lsl.Save(self.par.LSLfile)
-
             elapsed_time = time.time() - start_time
             timeslice = gpsEnd - gpsStart
             logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
