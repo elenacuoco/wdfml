@@ -39,19 +39,24 @@ class createSegments(Observable):
         start = self.gps
         last = False
         fails = 0
+        iter_fails = 0
         while start < self.lastGPS:
             try:
                 itfStatus.GetData(Info)
             except:
-                if self.process == 1:  # online
+                if iter_fails == 0:  # online
                     logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                    timeslice += 1.0
-                    time.sleep(600)
+                    time.sleep(300)
+                    iter_fails += 1
                 else:
-                    timeslice=0
+                    timeslice = 0
+                    logging.error("DAQ PROBLEM @GPS %s" % start)
                     fails += 1
+                    start += 1.0
+                    itfStatus = FrameIChannel(self.file, self.state_chan, 1., start)
             else:
                 start = Info.GetX(0)
+                iter_fails = 0
                 if Info.GetY(0, 0) == 0:
                     logging.error("MISSING DATA @GPS %s" % start)
                     fails += 1
