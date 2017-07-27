@@ -30,7 +30,6 @@ class createSegments(Observable):
         self.minSlice = parameters.minSlice
         self.lastGPS = parameters.lastGPS
         self.flag = parameters.flag
-        self.process = parameters.process  # define if if you are running while taking data
 
     def Process ( self ):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
@@ -46,7 +45,7 @@ class createSegments(Observable):
             except:
                 if iter_fails == 0:  # online
                     logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                    time.sleep(300)
+                    time.sleep(600)
                     iter_fails += 1
                 else:
                     timeslice = 0
@@ -60,7 +59,7 @@ class createSegments(Observable):
                 if Info.GetY(0, 0) == 0:
                     logging.error("MISSING DATA @GPS %s" % start)
                     fails += 1
-                if Info.GetY(0, 0) == self.flag:
+                if Info.GetY(0, 0) in self.flag:
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):

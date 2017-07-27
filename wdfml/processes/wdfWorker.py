@@ -57,8 +57,8 @@ class wdfWorker(object):
                 ######## read data for AR estimation###############
                 # self.parameter for sequence of data.
                 # Add a 100.0 seconds delay to not include too much after lock noise in the estimation
-                if (gpsEnd - gpsStart >= self.learnlen + 100.0):
-                    gpsE = gpsStart + 100.0
+                if (gpsEnd - gpsStart >= self.learnlen + 300.0):
+                    gpsE = gpsStart + 300.0
                 else:
                     gpsE = gpsEnd - self.learnlen
                 strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
