@@ -45,8 +45,9 @@ class createSegments(Observable):
             except:
                 if iter_fails == 0:  # online
                     logging.warning("GPS time: %s. Waiting for new acquired data" % start)
-                    time.sleep(600)
+                    time.sleep(1000)
                     iter_fails += 1
+                    timeslice += 1
                 else:
                     timeslice = 0
                     logging.error("DAQ PROBLEM @GPS %s" % start)
