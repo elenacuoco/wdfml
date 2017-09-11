@@ -64,3 +64,6 @@ class Whitening(object):
         self.LF.init(self.LV)
         self.ADE.GetLatticeView(self.LV)
         return
+    def GetLV (self ):
+
+        return self.LV
