@@ -122,12 +122,12 @@ class ParameterEstimation(Observer, Observable):
 
         timeDuration = np.abs(np.max(indicesnew) - np.min(indicesnew)) / self.sampling
         timeDetailnew = maxvalue[1] / self.sampling
-        #timeDetailnew = timeDuration / (2*self.sampling)
+
         snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
         tnew = t0 + timeDetailnew
 
-        snrMax = snrDetailnew / sigma
-        snr = event.mSNR
+        snrMax = snrDetailnew /sigma/(np.sqrt(2)*np.log(self.Ncoeff))
+        snr = event.mSNR/(np.sqrt(2)*np.log(self.Ncoeff))
 
         freqatpeak = wave_freq(Icoeff, self.sampling)
         freq = estimate_freq_mean(Icoeff, self.sampling)
