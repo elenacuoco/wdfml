@@ -122,8 +122,8 @@ class ParameterEstimation(Observer, Observable):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
         timeDuration = np.abs(np.max(indicesnew) - np.min(indicesnew)) / self.sampling
-        #timeDetailnew = maxvalue[1] / self.sampling
-        timeDetailnew = np.median(indicesnew)/ self.sampling
+        timeDetailnew = maxvalue[1] / self.sampling
+        #timeDetailnew = np.median(indicesnew)/ self.sampling
         snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
         tnew = t0 + timeDetailnew
 
