@@ -15,13 +15,9 @@ class DWhitening(object):
 
     def Process(self, data, dataw):
         self.DW.Input(data)
-        data_available = True
-
         try:
             self.DW.Output(dataw)
-            data_available = True
         except:
             print('no data available')
-            data_available = False
 
         return
