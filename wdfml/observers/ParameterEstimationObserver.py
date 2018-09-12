@@ -71,6 +71,7 @@ class ParameterEstimation(Observer, Observable):
     def update ( self, event ):
         wave = event.mWave
         t0 = event.mTime
+        logging.info(str(t0))
         coeff = np.zeros(self.Ncoeff)
         Icoeff = np.zeros(self.Ncoeff)
         for i in range(self.Ncoeff):
@@ -122,7 +123,7 @@ class ParameterEstimation(Observer, Observable):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
         timeDuration = np.abs(np.max(indicesnew) - np.min(indicesnew)) / self.sampling
-        timeDetailnew = maxvalue[1] / self.sampling
+        timeDetailnew = np.float(maxvalue[1]) / self.sampling
         #timeDetailnew = np.median(indicesnew)/ self.sampling
         snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
         tnew = t0 + timeDetailnew
