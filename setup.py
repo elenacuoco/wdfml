@@ -70,7 +70,8 @@ setuptools.setup(
         "testpackage",
         "pytsa",
         "sklearn",
-        "numpy"
+        "numpy",
+        "scipy"
     ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],

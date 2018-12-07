@@ -6,7 +6,8 @@ import sklearn.mixture  as mix
 from sklearn.pipeline import Pipeline
 import logging
 import matplotlib.pyplot as plt
-
+import seaborn as sns
+import pandas as pd
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -301,12 +302,7 @@ class WDFMLClassify(object):
         return self.labels
 
     def PlotClustering ( self ):
-        plt.xlim(min(self.X_red[:, 0]) - 0.1, max(self.X_red[:, 0]) + 0.1)
-        plt.ylim(min(self.X_red[:, 1]) - 0.1, max(self.X_red[:, 1]) + 0.1)
-
-        plt.xlabel('1-dim coefficients', fontsize=14)
-        plt.ylabel('2-dim coefficients', fontsize=14)
-        for i in range(self.X_red.shape[0]):
-            plt.text(self.X_red[i, 0], self.X_red[i, 1], str(self.labels[i]),
-                     color=plt.cm.spectral(self.labels[i] / 10.0),
-                                           fontdict={'weight': 'bold', 'size': 12})
+        data=pd.DataFrame(self.X_red,columns=["DIM_1","DIM_2"])
+        data['LABEL']=self.labels
+        sns.lmplot(x="DIM_1", y="DIM_2", data=data, fit_reg=False, legend=True, size=9,
+                       hue='LABEL', scatter_kws={"s": 100, "alpha": 0.3})

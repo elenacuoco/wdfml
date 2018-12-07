@@ -4,7 +4,7 @@ __project__ = 'wdfml'
 from pytsa.tsa import *
 
 from  wdfml.observers.observable import *
-
+import logging
 
 class wdf(Observable):
     def __init__ ( self, parameters, wTh=WaveletThreshold.dohonojohnston):
@@ -44,6 +44,10 @@ class wdf(Observable):
 
     def Process ( self ):
         while self.wdf2classify.GetDataNeeded() > 0:
-            self.wdf2classify(self.trigger)
-            if self.trigger.mWave != '':
+            m=self.wdf2classify(self.trigger)
+
+            #logging.info(str(self.trigger.mTime))
+            #logging.info(str(self.wdf2classify.GetDataNeeded()))
+            if m!=0:
                 self.update_observers(self.trigger)
+
