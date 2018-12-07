@@ -21,12 +21,17 @@ from wdfml.structures.eventPE import *
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def estimate_snr(a,axis=0,ddof=0):
+    a = np.asanyarray(a)
+    m = a.mean(axis)
+    sd = a.std(axis=axis, ddof=ddof)
+    return np.where(sd == 0, 0, m / sd)
 
-def estimate_freq_mean ( sig, fs ):
+def estimate_freq_mean( sig, fs ):
     freq, psd = signal.welch(sig, fs, window='hanning', nperseg=len(sig), noverlap=None, nfft=None, detrend=False,
                              return_onesided=True, scaling='density', axis=-1)
-
     threshold = np.mean(psd)
+
     mask = np.abs(psd) >= threshold
     peaks = freq[mask]
     freq_mean = peaks.mean()
@@ -54,6 +59,10 @@ def estimate_freq_mean_max ( sig, fs ):
     return mpf, fmax
 
 
+
+
+
+
 class ParameterEstimation(Observer, Observable):
     def __init__ ( self, parameters ):
         """
@@ -71,38 +80,27 @@ class ParameterEstimation(Observer, Observable):
     def update ( self, event ):
         wave = event.mWave
         t0 = event.mTime
-        logging.info(str(t0))
         coeff = np.zeros(self.Ncoeff)
         Icoeff = np.zeros(self.Ncoeff)
         for i in range(self.Ncoeff):
             coeff[i] = event.GetCoeff(i)
+
         sigma = 1.0 / (event.mSNR / np.sqrt(np.sum([x * x for x in coeff])))
-        #### here we reconstruct really the event in the wavelet plane
 
-        new = np.zeros((int(self.scale), int(2 ** ((self.scale) - 1))))
-        dnew = defaultdict(list)
+        isnews=np.argsort(coeff)
+        vsnews=coeff[isnews]
+        index0 = isnews[0]
 
-        for j in range(int(self.scale)):
-            for k in range(int(2 ** (j - 1))):
-                new[j, k] = coeff[j + k]
-                dnew[new[j, k]].append((j, k))
+        indicesnew = [index0]
+        valuesnew = [vsnews[0]]
 
-        for value, positions in nlargest(1, dnew.items(), key=lambda item: item[0]):
-            index0 = positions[0][0] + positions[0][1]
-            scale0 = positions[0][0]
-            value0 = value
-            maxvalue = (scale0, index0, value0)
-
-        indicesnew = []
-        valuesnew = []
-        for value, positions in nlargest(self.Ncoeff, dnew.items(), key=lambda item: item[0]):
-            index = positions[0][0] + positions[0][1]
-            if np.abs(index - index0) / index0 < 0.1:
+        for i, (index, value) in enumerate(zip(isnews, vsnews)):
+            if np.abs(index - index0) < 100:
                 indicesnew.append(index)
                 valuesnew.append(value)
                 index0 = index
 
-        for i in range(self.Ncoeff):
+        for i in range(1, self.Ncoeff):
             if i not in indicesnew:
                 coeff[i] = 0.0
 
@@ -123,14 +121,13 @@ class ParameterEstimation(Observer, Observable):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
         timeDuration = np.abs(np.max(indicesnew) - np.min(indicesnew)) / self.sampling
-        timeDetailnew = np.float(maxvalue[1]) / self.sampling
-        #timeDetailnew = np.median(indicesnew)/ self.sampling
-        snrDetailnew = np.sqrt(np.sum([x * x for x in valuesnew]))
+        timeDetailnew = np.median(indicesnew)/ self.sampling
+        snrDetailnew =  np.sqrt(np.sum([x * x for x in valuesnew]))
         tnew = t0 + timeDetailnew
 
-        snrMax = snrDetailnew / (sigma)  # *self.df)
+        freq = estimate_freq_mean(Icoeff, self.sampling)
+        snrMax=snrDetailnew/sigma
         snr = event.mSNR  # /self.df
         freqatpeak = wave_freq(Icoeff, self.sampling)
-        freq = estimate_freq_mean(Icoeff, self.sampling)
         eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
         self.update_observers(eventParameters)
