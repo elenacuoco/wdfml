@@ -6,12 +6,10 @@ This class implement the clustering of triggers found by wdf pipeline
 """
 
 import logging
-from collections import defaultdict
-from heapq import nlargest
 
-from numpy.fft import fft
 from pytsa.tsa import *
-from scipy import signal, integrate
+from scipy import signal
+from scipy.signal import find_peaks, peak_prominences
 
 from wdfml.observers.observable import Observable
 from wdfml.observers.observer import Observer
@@ -21,50 +19,27 @@ from wdfml.structures.eventPE import *
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def estimate_snr(a,axis=0,ddof=0):
-    a = np.asanyarray(a)
-    m = a.mean(axis)
-    sd = a.std(axis=axis, ddof=ddof)
-    return np.where(sd == 0, 0, m / sd)
 
-def estimate_freq_mean( sig, fs ):
-    freq, psd = signal.welch(sig, fs, window='hanning', nperseg=len(sig), noverlap=None, nfft=None, detrend=False,
-                             return_onesided=True, scaling='density', axis=-1)
-    threshold = np.mean(psd)
+def estimate_meta_features(sig, fs):
+    peakind = signal.find_peaks_cwt(sig, np.arange(1, 64))
+    tMax = np.argmax(np.abs(sig)) / fs
+    duration = (np.max(peakind) - np.min(peakind)) / fs
 
-    mask = np.abs(psd) >= threshold
-    peaks = freq[mask]
-    freq_mean = peaks.mean()
-    return freq_mean
+    freq, psd = signal.welch(sig, fs, nfft=len(sig), nperseg=len(sig))
 
+    peaks, _ = find_peaks(psd, height=psd.mean())
 
-def wave_freq ( sig, fs ):
-    domain = float(len(sig))
-    assert domain > 0
-    index = np.argmax(abs(fft(sig)[1:])) + 2
-    if index > len(sig) / 2:
-        index = len(sig) - index + 2
-    freq = (fs / domain) * (index - 1)
-    return freq
+    freqs = freq[peaks]
+    freqMean = np.mean(freqs)
+    freqMax = np.max(freqs)
+    prominences = peak_prominences(psd, peaks)[0]
+    snrMax = np.max(prominences) / (4.0 * psd.mean())
 
-
-def estimate_freq_mean_max ( sig, fs ):
-    nperseg = np.ceil(len(sig))
-    f, P = signal.welch(sig, fs, window='hanning', nperseg=nperseg, noverlap=None, nfft=len(sig), detrend=False, \
-                        return_onesided=True, scaling='spectrum', axis=-1)
-    Area = integrate.cumtrapz(P, f, initial=0)
-    Ptotal = Area[-1]
-    mpf = integrate.trapz(f * P, f) / Ptotal  # mean power frequency
-    fmax = f[np.argmax(P)]
-    return mpf, fmax
-
-
-
-
+    return tMax, duration, snrMax, freqMean, freqMax
 
 
 class ParameterEstimation(Observer, Observable):
-    def __init__ ( self, parameters ):
+    def __init__(self, parameters):
         """
         :type parameters: class Parameters object
         """
@@ -72,37 +47,14 @@ class ParameterEstimation(Observer, Observable):
         Observer.__init__(self)
         self.sampling = parameters.resampling
         self.Ncoeff = parameters.Ncoeff
-        self.scale = int(np.log2(parameters.Ncoeff))
-        self.snr = parameters.threshold
-        self.ARsigma = parameters.sigma
-        self.df = (self.sampling / self.Ncoeff)  # *np.sqrt(2)
 
-    def update ( self, event ):
+    def update(self, event):
         wave = event.mWave
         t0 = event.mTime
         coeff = np.zeros(self.Ncoeff)
         Icoeff = np.zeros(self.Ncoeff)
         for i in range(self.Ncoeff):
             coeff[i] = event.GetCoeff(i)
-
-        sigma = 1.0 / (event.mSNR / np.sqrt(np.sum([x * x for x in coeff])))
-
-        isnews=np.argsort(coeff)
-        vsnews=coeff[isnews]
-        index0 = isnews[0]
-
-        indicesnew = [index0]
-        valuesnew = [vsnews[0]]
-
-        for i, (index, value) in enumerate(zip(isnews, vsnews)):
-            if np.abs(index - index0) < 100:
-                indicesnew.append(index)
-                valuesnew.append(value)
-                index0 = index
-
-        for i in range(1, self.Ncoeff):
-            if i not in indicesnew:
-                coeff[i] = 0.0
 
         data = array2SeqView(t0, self.sampling, self.Ncoeff)
         data = data.Fill(t0, coeff)
@@ -120,14 +72,9 @@ class ParameterEstimation(Observer, Observable):
             for i in range(self.Ncoeff):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
-        timeDuration = np.abs(np.max(indicesnew) - np.min(indicesnew)) / self.sampling
-        timeDetailnew = np.median(indicesnew)/ self.sampling
-        snrDetailnew =  np.sqrt(np.sum([x * x for x in valuesnew]))
-        tnew = t0 + timeDetailnew
+        snrMean = event.mSNR
 
-        freq = estimate_freq_mean(Icoeff, self.sampling)
-        snrMax=snrDetailnew/sigma
-        snr = event.mSNR  # /self.df
-        freqatpeak = wave_freq(Icoeff, self.sampling)
-        eventParameters = eventPE(tnew, snr, snrMax, freq, freqatpeak, timeDuration, wave, coeff, Icoeff)
+        tMax, duration, snrMax, freqMean, freqMax = estimate_meta_features(Icoeff, self.sampling)
+        tnew = t0 + tMax
+        eventParameters = eventPE(tnew, snrMean, snrMax, freqMean, freqMax, duration, wave, coeff, Icoeff)
         self.update_observers(eventParameters)

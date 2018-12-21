@@ -304,5 +304,6 @@ class WDFMLClassify(object):
     def PlotClustering ( self ):
         data=pd.DataFrame(self.X_red,columns=["DIM_1","DIM_2"])
         data['LABEL']=self.labels
+        plt.figure(figsize=(8.0, 7.0))
         sns.lmplot(x="DIM_1", y="DIM_2", data=data, fit_reg=False, legend=True, size=9,
                        hue='LABEL', scatter_kws={"s": 100, "alpha": 0.3})

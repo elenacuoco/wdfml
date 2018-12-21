@@ -92,6 +92,9 @@ class wdfAdaptiveWorker(object):
 
             self.par.sigma=lsl.GetSigma(self.par.Noutdata-1)
             logging.info('LSL Estimated sigma= %s' % self.par.sigma)
+            self.par.LSLfile = dir_chunk + "LSLcoeff-AR%s-fs%s-%s.txt" % (
+                self.par.ARorder, self.par.resampling, self.par.channel)
+            lsl.Save(self.par.LSLfile)
             ### WDF process
             WDF = wdf(self.par, wavThresh)
 
@@ -101,8 +104,7 @@ class wdfAdaptiveWorker(object):
             parameterestimation = ParameterEstimation(self.par)
             parameterestimation.register(savetrigger)
             WDF.register(parameterestimation)
-            self.par.LSLfile = dir_chunk + "LSLcoeff-AR%s-fs%s-%s.txt" % (
-                self.par.ARorder, self.par.resampling, self.par.channel)
+
             filejson = 'parametersUsed.json'
             self.par.dump(self.par.dir + filejson)
             ###Start detection loop
@@ -113,7 +115,6 @@ class wdfAdaptiveWorker(object):
                 lsl(data_ds, dataw)
                 WDF.SetData(dataw)
                 WDF.Process()
-
             lsl.Save(self.par.LSLfile)
             elapsed_time = time.time() - start_time
             timeslice = gpsEnd - gpsStart

@@ -22,7 +22,7 @@ from wdfml.processes.whitening import *
 
 
 class wdfWorker(object):
-    def __init__ ( self, parameters, fullPrint=1 ):
+    def __init__ ( self, parameters, fullPrint=1):
         self.par = Parameters()
 
         self.par.copy(parameters)
@@ -56,9 +56,9 @@ class wdfWorker(object):
                 logging.info('Start AR self.parameter estimation')
                 ######## read data for AR estimation###############
                 # self.parameter for sequence of data.
-                # Add a 20.0 seconds delay to not include too much after lock noise in the estimation
-                if (gpsEnd - gpsStart >= self.learnlen + 20.0):
-                    gpsE = gpsStart + 20.0
+                # Add a 100.0 seconds delay to not include too much after lock noise in the estimation
+                if (gpsEnd - gpsStart >= self.learnlen + 100.0):
+                    gpsE = gpsStart + 100.0
                 else:
                     gpsE = gpsEnd - self.learnlen
                 strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
@@ -116,9 +116,10 @@ class wdfWorker(object):
                 WDF.SetData(dataw)
                 WDF.Process()
 
-            WDF.unregister_all()
+
             elapsed_time = time.time() - start_time
             timeslice = gpsEnd - gpsStart
             logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
             fileEnd = self.par.dir + "ProcessEnded.check"
             open(fileEnd, 'a').close()
+

@@ -45,9 +45,9 @@ class wdf(Observable):
     def Process ( self ):
         while self.wdf2classify.GetDataNeeded() > 0:
             m=self.wdf2classify(self.trigger)
-
             #logging.info(str(self.trigger.mTime))
             #logging.info(str(self.wdf2classify.GetDataNeeded()))
-            if m!=0:
+            #logging.info(str(m))
+            if m==1:
                 self.update_observers(self.trigger)
 
