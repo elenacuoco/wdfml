@@ -8,11 +8,12 @@ import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def GMMpipeline ( matrix, upper_bound, pca_components, spectral_emb_coeff, n_neighbors ):
+def GMMpipeline(matrix, upper_bound, pca_components, spectral_emb_coeff, n_neighbors):
     '''
     This function clusters the input matrix using the GaussianMixture algorithm (gaussian mixture model)
     The number of clusters is found by running the algorithm for n_components = 2 to upper_bound
@@ -41,7 +42,7 @@ def GMMpipeline ( matrix, upper_bound, pca_components, spectral_emb_coeff, n_nei
     return clf
 
 
-def gaussian_mixture ( matrix, upper_bound ):
+def gaussian_mixture(matrix, upper_bound):
     '''
     This function clusters the input matrix using the GaussianMixture algorithm (gaussian mixture model)
     The number of clusters is found by running the algorithm for n_components = 2 to upper_bound
@@ -81,7 +82,7 @@ def gaussian_mixture ( matrix, upper_bound ):
 
 
 class WDFMLClassify(object):
-    def __init__ ( self, Waves_Coefficients ):
+    def __init__(self, Waves_Coefficients):
         """
 
 
@@ -93,7 +94,7 @@ class WDFMLClassify(object):
 
         self.Waves_Coefficients = Waves_Coefficients
 
-    def PreprocessingSimple ( self ):
+    def PreprocessingSimple(self):
         """
         simple Standard Scaler
         """
@@ -101,7 +102,7 @@ class WDFMLClassify(object):
 
         return self.X_red
 
-    def PreprocessingSimplePCA ( self, PCA_coefficients, whiten=True ):
+    def PreprocessingSimplePCA(self, PCA_coefficients, whiten=True):
         """
         simple PCA
         """
@@ -111,7 +112,7 @@ class WDFMLClassify(object):
         self.X_red = self.pca.fit_transform(self.Waves_Coefficients)
         return self.X_red
 
-    def PreprocessingEmb ( self, MNE_coefficients, N_neighbors ):
+    def PreprocessingEmb(self, MNE_coefficients, N_neighbors):
         """
         :type MNE_coefficients: int
 
@@ -131,7 +132,7 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_red)
         return self.X_red
 
-    def PreprocessingPCA ( self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True ):
+    def PreprocessingPCA(self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True):
         """
         :type MNE_coefficients: int
         :type PCA_coefficients: int
@@ -153,7 +154,7 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
 
-    def PreprocessingICA ( self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True ):
+    def PreprocessingICA(self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True):
         """
         :type MNE_coefficients: int
         :type PCA_coefficients: int
@@ -177,7 +178,7 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
 
-    def PreprocessingSparsePCA ( self, PCA_coefficients, MNE_coefficients, N_neighbors ):
+    def PreprocessingSparsePCA(self, PCA_coefficients, MNE_coefficients, N_neighbors):
         """
         :type MNE_coefficients: int
         :type PCA_coefficients: int
@@ -204,7 +205,7 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
 
-    def PreprocessingRandomizedPCA ( self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True ):
+    def PreprocessingRandomizedPCA(self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True):
         """
         :type MNE_coefficients: int
         :type PCA_coefficients: int
@@ -226,7 +227,7 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
 
-    def PreprocessingPCA ( self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True ):
+    def PreprocessingPCA(self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True):
         """
         :type MNE_coefficients: int
         :type PCA_coefficients: int
@@ -249,7 +250,7 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
 
-    def PreprocessingPCATSNE ( self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True ):
+    def PreprocessingPCATSNE(self, PCA_coefficients, MNE_coefficients, N_neighbors, whiten=True):
         """
         :type MNE_coefficients: int
         :type PCA_coefficients: int
@@ -264,14 +265,16 @@ class WDFMLClassify(object):
         # self.pca = decomposition.SparsePCA(n_components=self.PCA_coefficients, random_state=0)
 
         self.Embedding = manifold.TSNE(n_components=2, perplexity=40.0, early_exaggeration=4.0,
-                    learning_rate=100.0, n_iter=1000, n_iter_without_progress=30, min_grad_norm=1e-07, \
-                    metric='euclidean', init='random', verbose=0, random_state=0, method='barnes_hut', angle=0.5)
+                                       learning_rate=100.0, n_iter=1000, n_iter_without_progress=30,
+                                       min_grad_norm=1e-07, \
+                                       metric='euclidean', init='random', verbose=0, random_state=0,
+                                       method='barnes_hut', angle=0.5)
 
         self.X_pca = self.pca.fit_transform(self.Waves_Coefficients)
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
 
-    def PreprocessingRBM ( self, components, MNE_coefficients, N_neighbors ):
+    def PreprocessingRBM(self, components, MNE_coefficients, N_neighbors):
         """
         :type MNE_coefficients: int
 
@@ -295,15 +298,15 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_rbm)
         return self.X_red
 
-    def Classify ( self, num_clusters ):
+    def Classify(self, num_clusters):
         self.labels = gaussian_mixture(self.X_red, num_clusters)
         n_c = len(np.unique(self.labels))
         logger.info('number of clusters: %s' % n_c)
         return self.labels
 
-    def PlotClustering ( self ):
-        data=pd.DataFrame(self.X_red,columns=["DIM_1","DIM_2"])
-        data['LABEL']=self.labels
+    def PlotClustering(self):
+        data = pd.DataFrame(self.X_red, columns=["DIM_1", "DIM_2"])
+        data['LABEL'] = self.labels
         plt.figure(figsize=(8.0, 7.0))
         sns.lmplot(x="DIM_1", y="DIM_2", data=data, fit_reg=False, legend=True, size=9,
-                       hue='LABEL', scatter_kws={"s": 100, "alpha": 0.3})
+                   hue='LABEL', scatter_kws={"s": 100, "alpha": 0.3})

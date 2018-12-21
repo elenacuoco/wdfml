@@ -13,13 +13,13 @@ import time
 from pytsa.tsa import *
 from pytsa.tsa import SeqView_double_t as SV
 
-from  wdfml.observers.observable import *
+from wdfml.observers.observable import *
 
 logging.basicConfig(level=logging.DEBUG)
 
 
 class createSegments(Observable):
-    def __init__ ( self, parameters ):
+    def __init__(self, parameters):
         """
         :type parameters: class Parameters
         """
@@ -31,7 +31,7 @@ class createSegments(Observable):
         self.lastGPS = parameters.lastGPS
         self.flag = parameters.flag
 
-    def Process ( self ):
+    def Process(self):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.

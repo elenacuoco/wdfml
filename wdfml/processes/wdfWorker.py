@@ -22,7 +22,7 @@ from wdfml.processes.whitening import *
 
 
 class wdfWorker(object):
-    def __init__ ( self, parameters, fullPrint=1):
+    def __init__(self, parameters, fullPrint=1):
         self.par = Parameters()
 
         self.par.copy(parameters)
@@ -31,7 +31,7 @@ class wdfWorker(object):
         self.fullPrint = fullPrint
         self.par.channel = parameters.channel
 
-    def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
+    def segmentProcess(self, segment, wavThresh=WaveletThreshold.dohonojohnston):
         gpsStart = segment[0]
         gpsEnd = segment[1]
         logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
@@ -41,7 +41,7 @@ class wdfWorker(object):
         # create the output dir
         if not os.path.exists(dir_chunk):
             os.makedirs(dir_chunk)
-        if not os.path.isfile(dir_chunk+'ProcessEnded.check'):
+        if not os.path.isfile(dir_chunk + 'ProcessEnded.check'):
             # self.parameter for whitening and its estimation self.parameters
             whiten = Whitening(self.par.ARorder)
             self.par.ARfile = dir_chunk + "ARcoeff-AR%s-fs%s-%s.txt" % (
@@ -116,10 +116,8 @@ class wdfWorker(object):
                 WDF.SetData(dataw)
                 WDF.Process()
 
-
             elapsed_time = time.time() - start_time
             timeslice = gpsEnd - gpsStart
             logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
             fileEnd = self.par.dir + "ProcessEnded.check"
             open(fileEnd, 'a').close()
-

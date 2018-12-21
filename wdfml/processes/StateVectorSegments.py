@@ -13,18 +13,19 @@ import time
 from pytsa.tsa import *
 from pytsa.tsa import SeqView_double_t as SV
 
-from  wdfml.observers.observable import *
+from wdfml.observers.observable import *
 
 logging.basicConfig(level=logging.DEBUG)
 
-def defineStateVector(stateVector,flag):
-        mask = pow(2, flag)
-        state = (stateVector & mask)
-        return state==mask
+
+def defineStateVector(stateVector, flag):
+    mask = pow(2, flag)
+    state = (stateVector & mask)
+    return state == mask
 
 
 class createSegments(Observable):
-    def __init__ ( self, parameters ):
+    def __init__(self, parameters):
         """
         :type parameters: class Parameters
         """
@@ -36,7 +37,7 @@ class createSegments(Observable):
         self.lastGPS = parameters.lastGPS
         self.flag = int(parameters.flag)
 
-    def Process ( self ):
+    def Process(self):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.
@@ -49,8 +50,8 @@ class createSegments(Observable):
                 logging.warning("GPS time: %s. Waiting for new acquired data" % start)
                 time.sleep(1000)
             else:
-                stateVector=int(Info.GetY(0, 0))
-                status=defineStateVector(stateVector, self.flag)
+                stateVector = int(Info.GetY(0, 0))
+                status = defineStateVector(stateVector, self.flag)
                 if start == self.lastGPS:
                     last = True
                     gpsEnd = start

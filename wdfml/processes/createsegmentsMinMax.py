@@ -3,7 +3,7 @@ __project__ = 'wdfml'
 
 from pytsa.tsa import *
 from pytsa.tsa import SeqView_double_t as SV
-from  wdfml.observers.observable import *
+from wdfml.observers.observable import *
 from wdfml.structures.segment import *
 import logging
 import time
@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 class createSegments(Observable):
-    def __init__ ( self, parameters ):
+    def __init__(self, parameters):
         """
         :type parameters: class Parameters
         """
@@ -24,7 +24,7 @@ class createSegments(Observable):
         self.maxSlice = parameters.maxSlice
         self.lastGPS = parameters.lastGPS
 
-    def Process ( self ):
+    def Process(self):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.
@@ -58,8 +58,8 @@ class createSegments(Observable):
             except:
                 logging.info("waiting for new acquired data")
                 logging.info("GPStime before sleep: %s" % Info.GetX(0))
-                tstart=Info.GetX(0)
-                itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart-1)
+                tstart = Info.GetX(0)
+                itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart - 1)
                 time.sleep(1000)
                 logging.info("GPStime after sleep: %s" % Info.GetX(0))
             continue

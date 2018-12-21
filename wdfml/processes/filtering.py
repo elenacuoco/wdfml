@@ -1,6 +1,7 @@
 from pytsa.tsa import *
 import logging
 
+
 class downsamplig(object):
     def __init__(self, Parameters):
         try:

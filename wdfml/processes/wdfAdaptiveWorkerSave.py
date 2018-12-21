@@ -21,8 +21,9 @@ from wdfml.processes.filtering import *
 from wdfml.processes.wdf import *
 from wdfml.processes.whitening import *
 
+
 class wdfAdaptiveWorker(object):
-    def __init__ ( self, parameters, fullPrint=1 ):
+    def __init__(self, parameters, fullPrint=1):
         self.par = Parameters()
         self.par.copy(parameters)
         self.par.Ncoeff = parameters.window
@@ -37,7 +38,7 @@ class wdfAdaptiveWorker(object):
         except:
             logging.error("Adaptive Estimation lambda not defined")
 
-    def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
+    def segmentProcess(self, segment, wavThresh=WaveletThreshold.dohonojohnston):
         gpsStart = segment[0]
         gpsEnd = segment[1]
         logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
@@ -63,7 +64,7 @@ class wdfAdaptiveWorker(object):
             # self.parameter for sequence of data.
             # Add a 100.0 seconds delay to not include too much after lock noise in the estimation
 
-            gpsE = gpsStart +10
+            gpsE = gpsStart + 10
             strLearn = FrameIChannel(self.par.file, self.par.channel, self.learnlen, gpsE)
             Learn = SV()
             Learn_DS = SV()
@@ -108,8 +109,6 @@ class wdfAdaptiveWorker(object):
             streaming.GetData(data)
             ds.Process(data, data_ds)
             lsl(data_ds, dataw)
-
-
 
         ### WDF process
         WDF = wdf(self.par, wavThresh)

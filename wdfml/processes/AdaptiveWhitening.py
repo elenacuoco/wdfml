@@ -8,9 +8,10 @@ __project__ = 'pytsa'
 
 from pytsa.tsa import *
 
+
 # @TODO write the code
 class AdaptiveWhitening(object):
-    def __init__ (self, ARorder):
+    def __init__(self, ARorder):
         """
 
         :type ARorder: int
@@ -21,7 +22,7 @@ class AdaptiveWhitening(object):
         self.LV = LatticeView(self.ARorder)
         self.LF = LatticeFilter(self.LV)
 
-    def ParametersEstimate (self, data):
+    def ParametersEstimate(self, data):
         """
 
         :type data: pytsa.SeqViewDouble
@@ -31,14 +32,14 @@ class AdaptiveWhitening(object):
         self.LF.init(self.LV)
         return
 
-    def GetSigma ( self ):
+    def GetSigma(self):
         return self.ADE.GetAR(0)
 
-    def Process(self, data,dataw):
+    def Process(self, data, dataw):
         self.LF(data, dataw)
         return
 
-    def ParametersSave (self, ARfile, LVfile):
+    def ParametersSave(self, ARfile, LVfile):
         """
         :param ARfile: file for AutoRegressive parameters
         :type ARfile: basestring
@@ -50,7 +51,7 @@ class AdaptiveWhitening(object):
         self.LV.Save(LVfile, "txt")
         return
 
-    def ParametersLoad (self, ARfile, LVfile):
+    def ParametersLoad(self, ARfile, LVfile):
         """
         :param ARfile: file for AutoRegressive parameters
         :type ARfile: basestring

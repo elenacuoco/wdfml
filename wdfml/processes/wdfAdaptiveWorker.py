@@ -21,7 +21,7 @@ from wdfml.processes.wdf import *
 
 
 class wdfAdaptiveWorker(object):
-    def __init__ ( self, parameters, fullPrint=1 ):
+    def __init__(self, parameters, fullPrint=1):
         self.par = Parameters()
         self.par.copy(parameters)
         self.par.Ncoeff = parameters.window
@@ -37,7 +37,7 @@ class wdfAdaptiveWorker(object):
         except:
             logging.error("Adaptive Estimation lambda not defined")
 
-    def segmentProcess ( self, segment, wavThresh=WaveletThreshold.dohonojohnston ):
+    def segmentProcess(self, segment, wavThresh=WaveletThreshold.dohonojohnston):
         gpsStart = segment[0]
         gpsEnd = segment[1]
         logging.info("Analyzing segment: %s-%s for channel %s" % (gpsStart, gpsEnd, self.par.channel))
@@ -52,7 +52,7 @@ class wdfAdaptiveWorker(object):
             data = SV()
             data_ds = SV()
             dataw = SV()
-            self.par.Noutdata = int(10*self.par.len * self.par.resampling)
+            self.par.Noutdata = int(10 * self.par.len * self.par.resampling)
             ds = downsamplig(self.par)
             streaming.GetData(data)
             ds.Process(data, data_ds)
@@ -75,8 +75,8 @@ class wdfAdaptiveWorker(object):
             ######################
             ###---preheating---###
             # reading data, downsampling and whitening
-            self.par.Noutdata=int(self.par.len * self.par.resampling)
-            gpsstart=data.GetStart()
+            self.par.Noutdata = int(self.par.len * self.par.resampling)
+            gpsstart = data.GetStart()
             streaming = FrameIChannel(self.par.file, self.par.channel, self.lenin, gpsstart)
             ds = downsamplig(self.par)
             streaming.GetData(data)
@@ -90,7 +90,7 @@ class wdfAdaptiveWorker(object):
                 ds.Process(data, data_ds)
                 lsl(data_ds, dataw)
 
-            self.par.sigma=lsl.GetSigma(self.par.Noutdata-1)
+            self.par.sigma = lsl.GetSigma(self.par.Noutdata - 1)
             logging.info('LSL Estimated sigma= %s' % self.par.sigma)
             self.par.LSLfile = dir_chunk + "LSLcoeff-AR%s-fs%s-%s.txt" % (
                 self.par.ARorder, self.par.resampling, self.par.channel)
