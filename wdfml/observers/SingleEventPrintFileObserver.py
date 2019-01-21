@@ -25,11 +25,13 @@ class SingleEventPrintTriggers(Observer):
         self.fullPrint = fullPrint
         self.headers = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave']
         self.headersFull = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave']
+        self.headersWave = ['gps', 'snr', 'snrMax', 'freq', 'freqMax', 'duration', 'wave']
         for i in range(par.Ncoeff):
             self.headers.append("wt" + str(i))
             self.headersFull.append("wt" + str(i))
         for i in range(par.Ncoeff):
             self.headersFull.append("rw" + str(i))
+            self.headersWave.append("rw" + str(i))
 
             ### write on disk in ordered way
 
@@ -55,6 +57,13 @@ class SingleEventPrintTriggers(Observer):
                     writer.writeheader()
                 writer.writerow(toprint)
         if self.fullPrint == 2:
+            with open(self.filesave, 'a') as csvfile:
+                writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=self.headersWave)
+                toprint = dict((k, self.ev[k]) for k in self.headersWave)
+                if not self.file_exists:
+                    writer.writeheader()
+                writer.writerow(toprint)
+        if self.fullPrint == 3:
             with open(self.filesave, 'a') as csvfile:
                 writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n', fieldnames=self.headersFull)
                 toprint = dict((k, self.ev[k]) for k in self.headersFull)

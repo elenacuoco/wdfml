@@ -8,6 +8,7 @@ import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+from sklearn.cluster import Birch
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -80,6 +81,13 @@ def gaussian_mixture(matrix, upper_bound):
 
     return res
 
+def birtch_partial(matrix,n_cluster):
+    brc = Birch(branching_factor=100, n_clusters=n_cluster, threshold=1.0, compute_labels = True)
+    model=brc.partial_fit(matrix)
+
+    res = model.predict(matrix)
+
+    return res
 
 class WDFMLClassify(object):
     def __init__(self, Waves_Coefficients):
@@ -273,6 +281,26 @@ class WDFMLClassify(object):
         self.X_pca = self.pca.fit_transform(self.Waves_Coefficients)
         self.X_red = self.Embedding.fit_transform(self.X_pca)
         return self.X_red
+    def PreprocessingTSNE(self, MNE_coefficients, N_neighbors, whiten=True):
+        """
+        :param MNE_coefficients: number of coefficnents for mns projection
+
+        :param N_neighbors: number of neighbors for embedding
+        """
+        self.MNE_coefficients = MNE_coefficients
+
+        self.N_neighbors = N_neighbors
+
+
+        self.Embedding = manifold.TSNE(n_components=2, perplexity=40.0, early_exaggeration=4.0,
+                                       learning_rate=100.0, n_iter=1000, n_iter_without_progress=30,
+                                       min_grad_norm=1e-07, \
+                                       metric='euclidean', init='random', verbose=0, random_state=0,
+                                       method='barnes_hut', angle=0.5)
+
+
+        self.X_red = self.Embedding.fit_transform(self.Waves_Coefficients)
+        return self.X_red
 
     def PreprocessingRBM(self, components, MNE_coefficients, N_neighbors):
         """
@@ -298,12 +326,16 @@ class WDFMLClassify(object):
         self.X_red = self.Embedding.fit_transform(self.X_rbm)
         return self.X_red
 
-    def Classify(self, num_clusters):
-        self.labels = gaussian_mixture(self.X_red, num_clusters)
+    def ClassifyGMM(self, num_clusters):
+         self.labels = gaussian_mixture(self.X_red, num_clusters)
+         n_c = len(np.unique(self.labels))
+         logger.info('number of clusters: %s' % n_c)
+         return self.labels
+    def ClassifyBirtch(self, num_clusters):
+        self.labels = birtch_partial(self.X_red,num_clusters)
         n_c = len(np.unique(self.labels))
         logger.info('number of clusters: %s' % n_c)
         return self.labels
-
     def PlotClustering(self):
         data = pd.DataFrame(self.X_red, columns=["DIM_1", "DIM_2"])
         data['LABEL'] = self.labels
