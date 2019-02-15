@@ -57,9 +57,9 @@ class createSegments(Observable):
             else:
                 start = Info.GetX(0)
                 iter_fails = 0
-                if Info.GetY(0, 0) == 0:
-                    logging.error("MISSING DATA @GPS %s" % start)
-                    fails += 1
+                #if Info.GetY(0, 0) == 0:
+                #    logging.error("MISSING DATA @GPS %s" % start)
+                #    fails += 1
                 if Info.GetY(0, 0) in self.flag:
                     timeslice += 1.0
                 else:

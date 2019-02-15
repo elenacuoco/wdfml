@@ -6,44 +6,26 @@ This class implement the clustering of triggers found by wdf pipeline
 """
 
 import logging
-
+import numpy as np
 from pytsa.tsa import *
 from scipy import signal
-from scipy.signal import find_peaks, peak_prominences
 
 from wdfml.observers.observable import Observable
 from wdfml.observers.observer import Observer
 from wdfml.structures.array2SeqView import *
 from wdfml.structures.eventPE import *
-import numpy as np
-import librosa
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# def estimate_meta_features(sig, fs):
-#     peakind = signal.find_peaks_cwt(sig, np.arange(1, 128))
-#     duration = (np.max(peakind) - np.min(peakind)) / fs
-#
-#     tMax = np.argmax(np.abs(sig)) / fs
-#     freq, psd = signal.welch(sig, fs, nfft=len(sig), nperseg=len(sig))
-#     peaks, _ = find_peaks(psd, height=psd.mean())
-#
-#     freqs = freq[peaks]
-#     freqMean = np.mean(freqs)
-#     freqMax = np.max(freqs)
-#     prominences = peak_prominences(psd, peaks)[0]
-#     snrMax = np.sqrt(np.max(prominences) / (4.0 * psd.mean()))
-#
-#     return tMax, duration, snrMax, freqMean, freqMax
-
-
-def extract_meta_features(sig, fs):
-    freqMean = np.mean(librosa.feature.spectral_centroid(sig, sr=fs,n_fft=len(sig),hop_length=len(sig)))
-    freqMax = np.mean(librosa.feature.spectral_rolloff(sig, sr=fs,n_fft=len(sig),hop_length=len(sig)))
-    rmse = librosa.feature.rmse(y=sig)
-    snrMax = np.max(np.abs(sig)) / np.mean(rmse)
+def extract_meta_features(sigIn, fs):
+    sig = np.pad(sigIn, (int(fs), int(fs)), 'constant')
+    freqs, psd = signal.welch(sig, fs, nperseg=1024)
+    freqMax = freqs[np.argmax(psd)]
+    freqMean = np.mean(freqs[psd.argsort()[-3:][::-1]])
+    rmse = np.mean(psd)
+    snrMax = np.sqrt(np.max(np.abs(sig)) / rmse)
     return snrMax, freqMean, freqMax
 
 
@@ -98,10 +80,9 @@ class ParameterEstimation(Observer, Observable):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
         snrMean = event.mSNR
-
+        sorted = np.nonzero(np.abs(coeff))
+        duration = np.abs(np.max(sorted) - np.min(sorted)) / self.sampling
         tMax = np.argmax(np.abs(coeff)) / self.sampling
-        sorted = np.argsort(np.abs(coeff))
-        duration = np.abs(sorted[0] - sorted[10]) / self.sampling
         snrMax, freqMean, freqMax = extract_meta_features(Icoeff, self.sampling)
         tnew = t0 + tMax
         eventParameters = eventPE(tnew, snrMean, snrMax, freqMean, freqMax, duration, wave, coeff, Icoeff)

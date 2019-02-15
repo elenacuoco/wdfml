@@ -81,6 +81,30 @@ def gaussian_mixture(matrix, upper_bound):
 
     return res
 
+def BGMM(matrix, n_clusters):
+    '''
+    This function clusters the input matrix using the GaussianMixture algorithm (gaussian mixture model)
+    The number of clusters is found by running the algorithm for n_components = 2 to upper_bound
+    and chosing the model which minimized the BIC.
+
+    Returns the labels for each observation.
+    :type upper_bound: int
+    :param upper_bound: max number of clusters
+
+    :type matrix: numpy matrix
+    '''
+
+
+
+
+    GaussianMixture = mix.BayesianGaussianMixture(n_components=n_clusters, covariance_type="full", random_state=1,
+                                                  max_iter=1000, n_init=1)
+    GaussianMixture.fit(matrix)
+
+    res = GaussianMixture.predict(matrix)
+
+    return res
+
 def birtch_partial(matrix,n_cluster):
     brc = Birch(branching_factor=100, n_clusters=n_cluster, threshold=1.0, compute_labels = True)
     model=brc.partial_fit(matrix)
@@ -331,6 +355,12 @@ class WDFMLClassify(object):
          n_c = len(np.unique(self.labels))
          logger.info('number of clusters: %s' % n_c)
          return self.labels
+    def ClassifyBGMM(self, num_clusters):
+         self.labels = BGMM(self.X_red, num_clusters)
+         n_c = len(np.unique(self.labels))
+         logger.info('number of clusters: %s' % n_c)
+         return self.labels
+
     def ClassifyBirtch(self, num_clusters):
         self.labels = birtch_partial(self.X_red,num_clusters)
         n_c = len(np.unique(self.labels))

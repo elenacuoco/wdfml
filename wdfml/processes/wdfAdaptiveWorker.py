@@ -86,7 +86,7 @@ class wdfAdaptiveWorker(object):
             LSL(data_ds, dataw)
             lsl = LSLfilter(LSL, self.Alambda, self.par.Noutdata, False)
             for i in range(self.par.preWhite):
-                streaming.GetData(data)
+                #streaming.GetData(data)
                 ds.Process(data, data_ds)
                 lsl(data_ds, dataw)
 
