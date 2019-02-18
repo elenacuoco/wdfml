@@ -18,14 +18,20 @@ from wdfml.structures.eventPE import *
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def thresh(coeff):
+    sigma=np.median(np.abs(coeff))/0.645
+    threshold = np.sqrt(2 * np.log(len(coeff))) * sigma;
 
-def extract_meta_features(sigIn, fs):
+    return threshold
+
+def extract_meta_features(sigIn, fs,duration):
     sig = np.pad(sigIn, (int(fs), int(fs)), 'constant')
     freqs, psd = signal.welch(sig, fs, nperseg=1024)
     freqMax = freqs[np.argmax(psd)]
     freqMean = np.mean(freqs[psd.argsort()[-3:][::-1]])
-    rmse = np.mean(psd)
-    snrMax = np.sqrt(np.max(np.abs(sig)) / rmse)
+    rmse = np.sqrt(2.0*np.average(psd))
+    snrMax = np.sqrt(np.sqrt(duration)*np.max(np.abs(sigIn))/ rmse)
+
     return snrMax, freqMean, freqMax
 
 
@@ -47,7 +53,6 @@ class ParameterEstimation(Observer, Observable):
         for i in range(self.Ncoeff):
             coeff[i] = event.GetCoeff(i)
         ########clustering in the wavelet plane################
-
         # isnews = np.argsort(np.abs(coeff))
         # index0 = isnews[0]
         # indicesnew = []
@@ -83,7 +88,7 @@ class ParameterEstimation(Observer, Observable):
         sorted = np.nonzero(np.abs(coeff))
         duration = np.abs(np.max(sorted) - np.min(sorted)) / self.sampling
         tMax = np.argmax(np.abs(coeff)) / self.sampling
-        snrMax, freqMean, freqMax = extract_meta_features(Icoeff, self.sampling)
+        snrMax, freqMean, freqMax = extract_meta_features(Icoeff, self.sampling,duration)
         tnew = t0 + tMax
         eventParameters = eventPE(tnew, snrMean, snrMax, freqMean, freqMax, duration, wave, coeff, Icoeff)
         self.update_observers(eventParameters)
