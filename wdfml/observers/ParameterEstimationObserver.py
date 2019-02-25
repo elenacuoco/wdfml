@@ -17,22 +17,24 @@ from wdfml.structures.eventPE import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+from numpy import argmax, sqrt, mean, diff, log
 
-def thresh(coeff):
-    sigma=np.median(np.abs(coeff))/0.645
-    threshold = np.sqrt(2 * np.log(len(coeff))) * sigma;
+from scipy.signal import find_peaks
 
-    return threshold
 
-def extract_meta_features(sigIn, fs,duration):
+def extract_meta_features(sigIn, fs):
     sig = np.pad(sigIn, (int(fs), int(fs)), 'constant')
-    freqs, psd = signal.welch(sig, fs, nperseg=1024)
-    freqMax = freqs[np.argmax(psd)]
-    freqMean = np.mean(freqs[psd.argsort()[-3:][::-1]])
-    rmse = np.sqrt(2.0*np.average(psd))
-    snrMax = np.sqrt(np.sqrt(duration)*np.max(np.abs(sigIn))/ rmse)
+    peaks, _ = find_peaks(sig, height=np.min(sig))
+    tMax = argmax(peaks) / fs
+    duration = np.abs(np.max(peaks) - np.min(peaks)) / fs
 
-    return snrMax, freqMean, freqMax
+    freqs, psd = signal.welch(sig, fs, nperseg=1024)
+    sel_freqs = freqs[psd.argsort()[-3:][::-1]]
+    freqMean = np.mean(sel_freqs)
+    freqMax = np.max(sel_freqs)
+    snrMax = np.sqrt(np.max(np.abs(sigIn)) / np.sqrt(np.average(psd)))
+
+    return tMax, snrMax, freqMean, freqMax, duration
 
 
 class ParameterEstimation(Observer, Observable):
@@ -52,21 +54,6 @@ class ParameterEstimation(Observer, Observable):
         Icoeff = np.zeros(self.Ncoeff)
         for i in range(self.Ncoeff):
             coeff[i] = event.GetCoeff(i)
-        ########clustering in the wavelet plane################
-        # isnews = np.argsort(np.abs(coeff))
-        # index0 = isnews[0]
-        # indicesnew = []
-        # for index in isnews:
-        #     if np.abs(index - index0) < 100:
-        #         indicesnew.append(index)
-        #         index0 = index
-        #
-        # for i in range(1, self.Ncoeff):
-        #     if i not in indicesnew:
-        #         coeff[i] = 0.0
-        #
-        # coeff[0] = event.GetCoeff(0)
-        ##############end of clustering#######################
 
         data = array2SeqView(t0, self.sampling, self.Ncoeff)
         data = data.Fill(t0, coeff)
@@ -85,10 +72,10 @@ class ParameterEstimation(Observer, Observable):
                 Icoeff[i] = dataIdct.GetY(0, i)
 
         snrMean = event.mSNR
-        sorted = np.nonzero(np.abs(coeff))
-        duration = np.abs(np.max(sorted) - np.min(sorted)) / self.sampling
-        tMax = np.argmax(np.abs(coeff)) / self.sampling
-        snrMax, freqMean, freqMax = extract_meta_features(Icoeff, self.sampling,duration)
+        # sorted = np.nonzero(Icoeff)
+        # duration = np.abs(np.max(sorted) - np.min(sorted)) / self.sampling
+        # tMax = np.argmax(np.abs(coeff)) / self.sampling
+        tMax, snrMax, freqMean, freqMax, duration = extract_meta_features(Icoeff, self.sampling)
         tnew = t0 + tMax
         eventParameters = eventPE(tnew, snrMean, snrMax, freqMean, freqMax, duration, wave, coeff, Icoeff)
         self.update_observers(eventParameters)
