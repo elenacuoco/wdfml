@@ -50,10 +50,10 @@ class wdfWorker(object):
                 self.par.ARorder, self.par.resampling, self.par.channel)
 
             if os.path.isfile(self.par.ARfile) and os.path.isfile(self.par.LVfile):
-                logging.info('Load AR self.parameter')
+                logging.info('Load AR parameters')
                 whiten.ParametersLoad(self.par.ARfile, self.par.LVfile)
             else:
-                logging.info('Start AR self.parameter estimation')
+                logging.info('Start AR parameter estimation')
                 ######## read data for AR estimation###############
                 # self.parameter for sequence of data.
                 # Add a 100.0 seconds delay to not include too much after lock noise in the estimation
