@@ -137,3 +137,5 @@ class wdfAdaptiveWorkerDS(object):
             logging.info('analyzed %s seconds in %s seconds' % (timeslice, elapsed_time))
             fileEnd = self.par.dir + "ProcessEnded.check"
             open(fileEnd, 'a').close()
+        else:
+            logging.info('Segment already processed')
