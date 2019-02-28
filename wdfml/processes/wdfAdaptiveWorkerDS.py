@@ -53,7 +53,7 @@ class wdfAdaptiveWorkerDS(object):
         if not os.path.isfile(dir_chunk + 'ProcessEnded.check'):
             if os.path.isfile(self.par.LSLfile):
                 logging.info('Load LSL parameter')
-                LSL = LSLLearning(self.par.ARorder, 1.0, self.Elambda)
+                LSL = LSLLearning(self.par.ARorder, self.par.sigma, self.Elambda)
                 LSL.Load(self.par.LSLfile)
             else:
                 logging.info('Start LSL parameter estimation')
