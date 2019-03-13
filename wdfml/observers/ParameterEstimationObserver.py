@@ -24,9 +24,9 @@ from scipy.signal import find_peaks
 
 def extract_meta_features(sigIn, fs):
     sig = np.pad(sigIn, (int(fs), int(fs)), 'constant')
-    peaks, _ = find_peaks(sig, height=np.min(sig))
+    inds = sigIn.argsort()[-10:][::-1]
     tMax = argmax(np.abs(sigIn)) / fs
-    duration = np.abs(np.max(peaks) - np.min(peaks)) / fs
+    duration = np.abs(np.max(inds) - np.min(inds)) / fs
 
     freqs, psd = signal.welch(sig, fs, nperseg=1024)
     sel_freqs = freqs[psd.argsort()[-3:][::-1]]
