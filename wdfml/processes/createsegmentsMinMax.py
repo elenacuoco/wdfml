@@ -11,56 +11,71 @@ import time
 logging.basicConfig(level=logging.INFO)
 
 
-class createSegments(Observable):
+class createSegmentsMinMax(Observable):
     def __init__(self, parameters):
         """
         :type parameters: class Parameters
         """
         Observable.__init__(self)
         self.file = parameters.file
-        self.state_chan = parameters.state_chan
+        self.state_chan = parameters.status_itf
         self.gps = parameters.gps
         self.minSlice = parameters.minSlice
         self.maxSlice = parameters.maxSlice
         self.lastGPS = parameters.lastGPS
+        self.flag = parameters.flag
 
     def Process(self):
         itfStatus = FrameIChannel(self.file, self.state_chan, 1., self.gps)
         Info = SV()
         timeslice = 0.
         start = self.gps
+        last = False
+        fails = 0
+        iter_fails = 0
         while start <= self.lastGPS:
             try:
                 itfStatus.GetData(Info)
-                # logging.info("GPStime: %s" % Info.GetX(0))
-                if Info.GetY(0, 0) == 1:
+            except:
+                if iter_fails == 0:  # online
+                    logging.warning("GPS time: %s. Waiting for new acquired data" % start)
+                    time.sleep(1000)
+                    iter_fails += 1
+                    timeslice += 1
+                else:
+                    timeslice = 0
+                    logging.error("DAQ PROBLEM @GPS %s" % start)
+                    fails += 1
+                    start += 1.0
+                    itfStatus = FrameIChannel(self.file, self.state_chan, 1., start)
+            else:
+                start = Info.GetX(0)
+                iter_fails = 0
+                # if Info.GetY(0, 0) == 0:
+                #    logging.error("MISSING DATA @GPS %s" % start)
+                #    fails += 1
+                if Info.GetY(0, 0) in self.flag:
                     timeslice += 1.0
                 else:
                     if (timeslice >= self.minSlice):
-                        gpsEnd = Info.GetX(0)
+                        gpsEnd = start
                         gpsStart = gpsEnd - timeslice
                         logging.info(
-                            "New science segment created: Start %s End %s Duration %s" % (
+                            "New segment created: Start %s End %s Duration %s" % (
                                 gpsStart, gpsEnd, timeslice))
-                        self.update_observers([[gpsStart, gpsEnd]])
-                        timeslice = 0.
-                    else:
-                        continue
+                        self.update_observers([[gpsStart, gpsEnd]], last)
+                        logging.error("Total Fails: %s" % fails)
+                    timeslice = 0.
+
                 if (timeslice >= self.maxSlice):
-                    gpsEnd = Info.GetX(0)
+                    gpsEnd = start
                     gpsStart = gpsEnd - timeslice
                     logging.info(
                         "New science segment created: Start %s End %s Duration %s" % (gpsStart, gpsEnd, timeslice))
-                    self.update_observers([[gpsStart, gpsEnd]])
+                    self.update_observers([[gpsStart, gpsEnd]], last)
                     timeslice = 0.
-                else:
-                    continue
-            except:
-                logging.info("waiting for new acquired data")
-                logging.info("GPStime before sleep: %s" % Info.GetX(0))
-                tstart = Info.GetX(0)
-                itfStatus = FrameIChannel(self.file, self.state_chan, 1., tstart - 1)
-                time.sleep(1000)
-                logging.info("GPStime after sleep: %s" % Info.GetX(0))
-            continue
-            start = Info.GetX(0)
+
+                if start == self.lastGPS:
+                    logging.info("Segment creation completed")
+                    self.unregister_all()
+                    break

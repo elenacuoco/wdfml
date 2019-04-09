@@ -57,7 +57,7 @@ class createSegments(Observable):
             else:
                 start = Info.GetX(0)
                 iter_fails = 0
-                #if Info.GetY(0, 0) == 0:
+                # if Info.GetY(0, 0) == 0:
                 #    logging.error("MISSING DATA @GPS %s" % start)
                 #    fails += 1
                 if Info.GetY(0, 0) in self.flag:
@@ -73,10 +73,6 @@ class createSegments(Observable):
                         logging.error("Total Fails: %s" % fails)
                     timeslice = 0.
                 if start == self.lastGPS:
-                    last = True
-                    gpsEnd = start
-                    gpsStart = gpsEnd - timeslice
                     logging.info("Segment creation completed")
-                    self.update_observers([[gpsStart, gpsEnd]], last)
                     self.unregister_all()
                     break
